@@ -1,23 +1,23 @@
-# Codex for Open Source application — pre-publication draft
+# Codex for Open Source application
 
-> **Not ready to submit.** The repository is not public yet, so GitHub metrics cannot be verified. After publication, run `codex-relay application render --repo DamonKoy/codex-session-relay --role creator`. The renderer rejects a public 404, fetches current GitHub data, maps Creator to Primary maintainer, and produces the current three text fields.
+> Public launch snapshot generated from GitHub data on 2026-08-12. Metrics can change; immediately before submission run `codex-relay application render --repo DamonKoy/codex-session-relay --role creator` and use the newly generated file.
 
-## Repository analysis
+## Verified repository analysis
 
-1. **Main purpose and problem**: Codex Session Relay safely combines Codex official authentication with separately authenticated Responses-compatible providers. It addresses split local history and unsafe transcript copying without merging credentials, quotas, or billing.
-2. **Public metrics**: Not yet available for this local-only repository. The final renderer fetches Stars, Forks, Contributors, license, language, default branch, and open issue count from GitHub's public API.
-3. **Functions and components**: Provider/config management, macOS Keychain, runtime launcher, history audit, confirmed migration and rollback, title tagging, reviewed handoff packages, application rendering, deterministic builds, tests, and security/release documentation.
-4. **Users**: Codex users, AI-agent developers, and open-source maintainers who need multiple model providers while preserving credential, transcript, filesystem, shell, network, and billing boundaries.
-5. **Ecosystem value**: A local-first, reversible reference implementation for provider isolation and human-reviewed cross-model handoffs, with no runtime dependency and synthetic test fixtures.
-6. **Relevant scenarios**: AI agents, CLI tooling, model-provider configuration, Keychain, JSONL/SQLite migration, subprocess execution, network APIs, automation, future adapters/plugins, and third-party contributions.
-7. **Security risks**: Malicious Provider endpoints or code, prompt injection in historical text, credential leakage, unauthorized requests, filesystem/session corruption, release or supply-chain compromise, and unsafe contributions.
-8. **How Codex Security helps**: Review paths where untrusted transcript, configuration, and contributor data cross credential, child-process, network, database, shell, and filesystem boundaries, including changes that weaken confirmation, redaction, rollback, or sandbox controls.
-9. **How API credits help**: Maintainer-reviewed automation for redacted issue triage, PR risk summaries, compatibility-test generation, regression clustering, and draft Release Notes. It will not auto-merge, auto-release, execute untrusted contributor code, or send private transcripts.
+1. **Purpose**: Safely run Codex with official authentication and separately authenticated Responses-compatible providers, then create reviewed cross-provider handoffs.
+2. **Public metrics at launch**: 1 star, 0 forks, and 1 public contributor.
+3. **Components**: Provider/key management, runtime launcher, session audit/migration/rollback, title tagging, safe handoff packages, application renderer, tests, and release tooling.
+4. **Users**: Codex users and open-source maintainers who need multiple providers without merging credentials or trusting raw transcripts.
+5. **Ecosystem value**: A local-first, reversible reference workflow for Provider isolation and explicit human review at Agent trust boundaries.
+6. **Agent/tooling scope**: AI Agents, CLI configuration, Keychain, SQLite/JSONL migration, subprocess execution, network Providers, and third-party contributions.
+7. **Security risks**: Malicious code/configuration, Prompt Injection, credential leaks, unauthorized requests, filesystem/session corruption, dependency or release compromise, and risky contributions.
+8. **Codex Security fit**: Review data-flow and execution paths that cross transcript, credential, Provider, Shell, network, and filesystem boundaries.
+9. **API credit use**: Redacted Issue triage, PR risk review, compatibility tests, regression analysis, and draft Release Notes with maintainer approval.
 
 ## Current form mapping
 
 - **GitHub username**: `DamonKoy`
-- **GitHub repository URL**: generated from the live public repository
+- **GitHub repository URL**: https://github.com/DamonKoy/codex-session-relay
 - **Role**: Primary maintainer (Creator maps to this current form option)
 - **Interests**: Codex Security; API credits for my project
 - **Fill manually and never store in generated files**: first name, last name, ChatGPT account email, and OpenAI Organization ID
@@ -26,15 +26,15 @@
 
 ### 1. Why does this repository qualify?
 
-**Recommended English (428/500 characters)**
+**Recommended English (483/500 characters)**
 
-Codex Session Relay is an Apache-2.0 macOS CLI that keeps Codex official authentication separate from external provider keys and creates reviewed, redacted cross-model handoffs. It includes reversible JSONL/SQLite migration, Keychain integration, read-only defaults, tests, security documentation, and a contribution workflow. Public metrics are omitted until the repository is live; the final renderer fetches them from GitHub.
+Codex Session Relay is an Apache-2.0 macOS CLI that keeps Codex official authentication separate from external provider keys and creates reviewed, redacted cross-model handoffs. It includes reversible JSONL/SQLite migration, Keychain integration, read-only defaults, tests, and security documentation. GitHub currently reports 1 star, 0 forks, and 1 public contributor. It gives agent-tool users a local-first reference for provider isolation and explicit review at trust boundaries.
 
 **中文翻译**
 
-Codex Session Relay 是 Apache-2.0 的 macOS CLI，将 Codex 官方认证与外部 Provider 密钥隔离，并创建经审阅、脱敏的跨模型接力。项目提供可回滚的 JSONL/SQLite 迁移、Keychain 集成、默认只读、安全文档、测试和贡献流程。公开前不填写指标，最终生成器将在仓库上线后从 GitHub 获取真实数据。
+Codex Session Relay 是 Apache-2.0 的 macOS CLI，将 Codex 官方认证与外部 Provider 密钥隔离，并创建经审阅、脱敏的跨模型接力任务。项目包含可回滚的 JSONL/SQLite 迁移、Keychain 集成、默认只读、安全文档和测试。GitHub 当前公开指标为 1 Star、0 Fork、1 位贡献者，为 Agent 工具用户提供本地优先的 Provider 隔离及信任边界人工复核参考实现。
 
-**Why**: It describes verifiable artifacts and explicitly prevents invented pre-release metrics.
+**Why**: It uses live GitHub metrics and verifiable repository artifacts.
 
 ### 2. How will you use API credits for your project?
 
@@ -62,4 +62,14 @@ This is an unofficial Alpha project, not affiliated with OpenAI or DeepSeek. Its
 
 ## Most recommended submission version
 
-This section remains withheld until the public repository resolves and live metrics are available. The renderer will generate three current form answers with no placeholders and the exact fixed selections listed above.
+### Why does this repository qualify?
+
+Codex Session Relay is an Apache-2.0 macOS CLI that keeps Codex official authentication separate from external provider keys and creates reviewed, redacted cross-model handoffs. It includes reversible JSONL/SQLite migration, Keychain integration, read-only defaults, tests, and security documentation. GitHub currently reports 1 star, 0 forks, and 1 public contributor. It gives agent-tool users a local-first reference for provider isolation and explicit review at trust boundaries.
+
+### How will you use API credits for your project?
+
+Credits will support maintainer-reviewed automation for redacted issue triage, PR risk summaries, compatibility-test generation for Codex/provider changes, regression clustering, and draft release notes. Inputs will exclude credentials and private transcripts. Outputs will be advisory: no automatic merge, release, network action, or execution of untrusted contributor code. Usage and acceptance will be logged for maintainability and abuse review.
+
+### Anything else we should know?
+
+This is an unofficial Alpha project, not affiliated with OpenAI or DeepSeek. Its attack surface includes untrusted provider URLs and handoff text, prompt injection, child-process credentials, shell/network/file access, SQLite/JSONL migration, and third-party CI or code contributions. Codex Security would help review changes across those paths. It does not share subscription quota, decrypt reasoning, or promise same-thread continuation; external providers are billed separately.

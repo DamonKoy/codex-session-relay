@@ -36,7 +36,7 @@ class ApplicationBuildTests(unittest.TestCase):
             with mock.patch("codex_session_relay.application.fetch_metrics", return_value=metrics):
                 application.render("DamonKoy/codex-session-relay", "creator", output)
             text = output.read_text(encoding="utf-8")
-            self.assertIn("0 stars, 0 forks, and 1 public contributors", text.lower())
+            self.assertIn("0 stars, 0 forks, and 1 public contributor", text.lower())
             lengths = [int(value) for value in re.findall(r"\((\d+)/500 characters\)", text)]
             self.assertEqual(len(lengths), 3)
             self.assertTrue(all(value <= 500 for value in lengths))
@@ -44,6 +44,11 @@ class ApplicationBuildTests(unittest.TestCase):
             self.assertIn("Codex Security; API credits for my project", text)
             self.assertIn("Fill manually", text)
             self.assertNotIn("[填写", text)
+
+    def test_metric_copy_uses_singular_and_plural_labels(self):
+        self.assertEqual(application._metric_count(0, "star"), "0 stars")
+        self.assertEqual(application._metric_count(1, "star"), "1 star")
+        self.assertEqual(application._metric_count(2, "public contributor"), "2 public contributors")
 
     def test_missing_repository_is_rejected(self):
         error = __import__("urllib.error").error.HTTPError(

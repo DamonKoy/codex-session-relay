@@ -1,6 +1,6 @@
 # X/Twitter launch copy
 
-> Draft only. Do not post until the repository is public and the URL resolves. Character counts below include the intended repository URL and use Unicode code-point counts; X may calculate weighted length differently, so verify in the composer before posting.
+> Ready for manual posting: the repository and v0.1.0 Alpha release are public. Character counts below include the repository URL and use Unicode code-point counts; X may calculate weighted length differently, so verify in the composer before posting. Do not automate publication from this document.
 
 ## Recommended bilingual post — 180 characters
 
