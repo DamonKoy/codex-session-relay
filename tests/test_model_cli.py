@@ -60,8 +60,6 @@ class ModelCliTests(unittest.TestCase):
     @mock.patch("codex_session_relay.model_cli.keychain.read_secret", return_value="TEST_KEY")
     def test_configured_deepseek_launches_without_prompt(self, _read, run):
         config = default_config()
-        config["providers"]["deepseek"]["base_url"] = "https://gateway.example/v1/"
-        config["providers"]["deepseek"].pop("setup_required")
         with mock.patch("codex_session_relay.model_cli.load_config", return_value=config):
             code, stdout, error = self.invoke(["deepseek", str(self.root)])
         self.assertEqual(code, 0)
@@ -70,10 +68,27 @@ class ModelCliTests(unittest.TestCase):
         self.assertEqual(run.call_args.args[1], "deepseek")
 
     @mock.patch("codex_session_relay.model_cli.sys.stdin.isatty", return_value=False)
-    def test_unconfigured_deepseek_fails_closed_without_tty(self, _isatty):
+    def test_missing_deepseek_key_fails_closed_without_tty(self, _isatty):
         code, _, error = self.invoke(["deepseek"])
         self.assertEqual(code, 1)
         self.assertIn("交互式终端", error)
+
+    @mock.patch("codex_session_relay.model_cli.codex.run_provider", return_value=0)
+    @mock.patch("codex_session_relay.model_cli.keychain.write_secret")
+    @mock.patch("codex_session_relay.model_cli.keychain.read_secret", return_value=None)
+    @mock.patch("codex_session_relay.model_cli.getpass.getpass", return_value="TEST_KEY")
+    @mock.patch("codex_session_relay.model_cli.sys.stdin.isatty", return_value=True)
+    def test_first_deepseek_run_prompts_only_for_key(
+        self, _isatty, _getpass, _read, write, _run
+    ):
+        code, stdout, error = self.invoke(["deepseek", str(self.root)])
+        self.assertEqual(code, 0)
+        self.assertEqual(error, "")
+        self.assertIn("官方 Responses API", stdout)
+        self.assertNotIn("网关 URL", stdout)
+        write.assert_called_once_with(
+            "codex-session-relay.provider.deepseek", "TEST_KEY"
+        )
 
     @mock.patch("codex_session_relay.model_cli.keychain.read_secret", return_value=None)
     def test_status_does_not_show_secret_and_checks_official_auth(self, _read):

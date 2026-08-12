@@ -105,6 +105,21 @@ class HandoffTests(unittest.TestCase):
         mapping = (self.relay_home / "handoffs" / "mappings.jsonl").read_text(encoding="utf-8")
         self.assertNotIn("Safe result", mapping)
 
+    @mock.patch("codex_session_relay.handoff.codex.require_minimum_version")
+    @mock.patch("codex_session_relay.handoff.codex.runtime")
+    def test_deepseek_handoff_checks_minimum_codex_version(self, runtime, require):
+        package = self.root / "package"
+        summary = handoff.prepare(
+            default_config(), self.session_id, "deepseek", package
+        )
+        require.side_effect = RelayError("unsupported")
+        with self.assertRaisesRegex(RelayError, "unsupported"):
+            handoff.send(
+                default_config(), package, summary["context_sha256"]
+            )
+        require.assert_called_once_with("0.144.0")
+        runtime.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

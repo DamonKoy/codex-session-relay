@@ -22,19 +22,19 @@ codex-model deepseek
 ```
 
 - `gpt` 使用已有 Codex 官方登录态，不读取或复制 `auth.json`。
-- `deepseek` 首次运行会询问 Responses-compatible HTTPS 网关，并以无回显方式把 Key 保存到 macOS Keychain；以后可直接启动。
+- `deepseek` 内置 DeepSeek V4 官方 Responses 地址；首次只需以无回显方式把 API Key 保存到 macOS Keychain。
 - 指定项目：`codex-model gpt /path/to/project`。
 - 传递 Codex 参数：`codex-model deepseek -- --sandbox read-only`。
 - 查看状态：`codex-model status`；接力、迁移等完整功能仍使用 `codex-relay`。
 
-这里的“切换”是为本次启动选择 Provider，不会永久改写 `~/.codex/config.toml`。DeepSeek 官方公开接口目前是 Chat Completions/Anthropic 格式，不是 Codex 所需的 Responses 接口，因此仍需要自有或组织的 `/responses` 网关。
+这里的“切换”是为本次启动选择 Provider，不会永久改写 `~/.codex/config.toml`。DeepSeek 已原生支持 Codex 所需的 Responses API；Relay 默认使用 `deepseek-v4-flash` 与 `https://api.deepseek.com/`，并要求 Codex CLI 0.144.0 或更高版本加载官方模型目录。
 
 ## 先选择你要做什么
 
 | 目标 | 最短路径 | 是否修改历史数据 |
 | --- | --- | --- |
 | 用 OpenAI 启动 Codex | `codex-model gpt` | 否 |
-| 经 Responses 网关使用 DeepSeek | `codex-model deepseek`（首次自动配置） | 否 |
+| 用 DeepSeek V4 Flash 启动 Codex | `codex-model deepseek`（首次录入 Key） | 否 |
 | 把最近任务接力给另一个模型 | `handoff prepare --last` → 审阅 → `show` → `send` | 新建任务，不改原任务 |
 | 修复侧边栏按 Provider 分组 | `history audit` → `plan-normalize` → `apply-normalize` | 是；有备份和回滚 |
 
@@ -51,7 +51,7 @@ codex-relay --version
 codex-relay doctor
 ```
 
-`doctor` 会以“通过 / 待配置 / 错误”显示检查结果。未配置 DeepSeek Responses 网关或 Key 都只是“待配置”，不会妨碍 OpenAI 模式。脚本需要 JSON 时使用：
+`doctor` 会以“通过 / 待配置 / 错误”显示检查结果。未配置 DeepSeek Key 只是“待配置”，不会妨碍 OpenAI 模式。脚本需要 JSON 时使用：
 
 ```bash
 codex-relay doctor --json
@@ -74,7 +74,7 @@ source ~/.zshrc
 
 ```bash
 python3 scripts/build.py
-python3 dist/codex-relay-0.2.1.pyz doctor
+python3 dist/codex-relay-0.3.0.pyz doctor
 (cd dist && shasum -a 256 -c SHA256SUMS)
 ```
 
@@ -86,17 +86,15 @@ OpenAI 使用现有 Codex 官方认证，Relay 不读取或复制认证内容：
 codex-relay run openai -- -C "$PWD"
 ```
 
-当前 Codex 只支持 Responses wire API，而 DeepSeek 官方公开 API 是 Chat Completions，不能把 `https://api.deepseek.com` 直接填给当前 Codex。你需要一个明确支持 `/responses`、并能路由到 DeepSeek 的自有或组织网关：
+内置配置会直接使用 DeepSeek V4 官方 Responses 地址及 V4 Flash 模型目录：
 
 ```bash
-codex-relay provider configure deepseek \
-  --base-url https://YOUR_RESPONSES_GATEWAY/v1
 codex-relay key set deepseek
 codex-relay key status deepseek
 codex-relay run deepseek -- -C "$PWD"
 ```
 
-Relay 不提供或代管该网关。Key 不写入配置、命令参数、日志、接力包或 Git 文件；它只通过目标 Codex 子进程的环境变量注入。外部调用按所配置网关/Provider 的账户独立计费。
+Key 不写入配置、命令参数、日志、接力包或 Git 文件；它只通过目标 Codex 子进程的环境变量注入。DeepSeek 调用按 DeepSeek 账户独立计费。高级用户仍可使用 `provider configure` 把该配置改为其他 Responses-compatible 网关。
 
 想先查看非秘密启动参数，不启动 Codex：
 
@@ -150,8 +148,8 @@ Relay 只修改 JSONL 首行的 `session_meta.payload.model_provider` 和 SQLite
 
 ## 常见问题
 
-- **DeepSeek Responses 接口显示“待配置”**：只使用 OpenAI 时可以忽略；需要 DeepSeek 时先配置一个真正支持 `/responses` 的网关，不能使用官方 Chat Completions 地址冒充。
-- **DeepSeek API Key 显示“待配置”**：按网关要求设置对应 Key；Relay 不会显示密钥内容。
+- **Codex 版本不支持**：内置 DeepSeek V4 模型目录要求 Codex CLI 0.144.0 或更高版本，请先升级 Codex。
+- **DeepSeek API Key 显示“待配置”**：创建 DeepSeek API Key 后运行 `key set`；Relay 不会显示密钥内容。
 - **未检测到 Codex 官方认证**：先运行 `codex login` 或在 Codex 桌面版完成登录，再重新运行 `doctor`。
 - **找不到任务**：先在 Codex 中运行过一次任务，再用 `session list`；使用 `--project` 时确保路径与任务工作目录一致。
 - **摘要不匹配**：文件在生成摘要后有变化；重新运行 `handoff show` 或重新生成迁移计划，不要绕过检查。

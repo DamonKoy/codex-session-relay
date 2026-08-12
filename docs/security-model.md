@@ -19,7 +19,7 @@
 ## Controls
 
 - HTTPS is mandatory except explicitly confirmed loopback HTTP.
-- Known Chat-Completions-only endpoints are not presented as Responses-compatible; DeepSeek requires an explicit gateway configuration.
+- The built-in DeepSeek endpoint is restricted to the official HTTPS host and uses a versioned V4 model catalog; arbitrary Providers still require explicit Responses-compatible configuration.
 - External credentials live in Keychain and never appear in persistent config or command arguments.
 - Handoff extraction is an allowlist; system/developer content, reasoning, encrypted content, and tools are excluded.
 - Secret patterns are redacted at prepare time and scanned again after editing.

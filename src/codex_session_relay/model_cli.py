@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from . import __version__, codex, keychain
-from .config import configure_provider, get_provider, load_config
+from .config import get_provider, load_config
 from .errors import RelayError
 from .paths import codex_home
 
@@ -36,30 +36,18 @@ def _resolve_project(raw: Optional[str]) -> Path:
 
 def _setup_deepseek(config: Dict[str, Any]) -> Dict[str, Any]:
     provider = get_provider(config, "deepseek")
-    endpoint_ready = bool(provider.get("base_url"))
     changed = False
-    if not endpoint_ready:
-        if not sys.stdin.isatty():
-            raise RelayError(
-                "DeepSeek 尚未配置。请在交互式终端运行 codex-model setup deepseek"
-            )
-        print("首次配置 DeepSeek")
-        print("需要一个明确支持 OpenAI /responses 的 HTTPS 网关；不能直接使用 api.deepseek.com。")
-        base_url = input("Responses 网关 URL：").strip()
-        config = configure_provider(config, "deepseek", base_url, "", "", False)
-        provider = get_provider(config, "deepseek")
-        changed = True
-
     if not keychain.read_secret(provider["keychain_service"]):
         if not sys.stdin.isatty():
             raise RelayError(
                 "DeepSeek API Key 尚未配置。请在交互式终端运行 codex-model setup deepseek"
             )
-        secret = getpass.getpass("网关/API Key（输入不回显）：")
+        print("首次配置 DeepSeek V4 Flash（官方 Responses API）")
+        secret = getpass.getpass("DeepSeek API Key（输入不回显）：")
         keychain.write_secret(provider["keychain_service"], secret)
         changed = True
     if changed:
-        print("DeepSeek 已配置：网关保存在 Relay 配置中，密钥保存在 macOS Keychain。")
+        print("DeepSeek 已配置：使用官方 Responses API，密钥保存在 macOS Keychain。")
     return config
 
 

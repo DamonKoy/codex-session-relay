@@ -75,8 +75,8 @@ class CliExperienceTests(unittest.TestCase):
     def test_doctor_human_output_treats_missing_key_as_setup_item(self, _read):
         code, stdout, stderr = self.invoke(["doctor"])
         self.assertEqual(code, 0)
-        self.assertIn("[待配置] deepseek Responses 接口", stdout)
         self.assertIn("[待配置] deepseek API Key", stdout)
+        self.assertNotIn("Responses 接口", stdout)
         self.assertIn("基础功能可用", stdout)
         self.assertEqual(stderr, "")
 

@@ -23,7 +23,7 @@ def _github_json(url: str) -> Any:
         url,
         headers={
             "Accept": "application/vnd.github+json",
-            "User-Agent": "codex-session-relay/0.2.1",
+            "User-Agent": "codex-session-relay/0.3.0",
         },
     )
     try:

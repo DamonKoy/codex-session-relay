@@ -6,17 +6,17 @@ The current release is macOS-first, not a claim of compatibility with every Mac 
 
 - macOS 15.7.8 on Apple silicon
 - Python 3.9.13
-- Codex CLI 0.147.0-alpha.6.5
+- Codex CLI 0.147.0 (DeepSeek V4 requires 0.144.0+)
 - A real local `state_5.sqlite` schema and a missing-Keychain first-run state
 
 Automated tests additionally use isolated temporary Codex homes, SQLite databases, JSONL transcripts, and a fake Codex executable. Intel Macs, other macOS releases, and other Codex schemas are expected to fail closed when incompatible, but require community/CI coverage before they can be called verified. The missing-Keychain lookup is verified locally; Keychain creation could not obtain login-keychain authorization from the current Codex execution context, so its real create/read/delete round trip remains a release gate.
 
-Provider compatibility is a separate boundary from macOS compatibility. Current Codex builds require a Responses endpoint. DeepSeek's official public API documents Chat Completions, so the built-in DeepSeek profile remains a setup item until the maintainer supplies a genuine Responses-compatible gateway. Relay rejects the official DeepSeek URL instead of claiming an unverified direct connection.
+Provider compatibility is a separate boundary from macOS compatibility. DeepSeek now documents native Responses API and Codex support. The built-in profile uses `https://api.deepseek.com/`, `deepseek-v4-flash`, and a versioned model catalog, and fails closed below Codex CLI 0.144.0. Endpoint existence and local Codex configuration parsing are verified without credentials; an authenticated end-to-end model call still requires a maintainer-owned test key.
 
 ## Before first use
 
 1. Run `codex-model gpt` for the official-auth path.
-2. Run `codex-model deepseek`; the first invocation guides endpoint and Keychain setup.
+2. Run `codex-model deepseek`; the first invocation asks only for the DeepSeek API Key and saves it to Keychain.
 3. Run `codex-model status`, then `codex-relay doctor`; use `doctor --json` only for automation.
 4. Use `codex-model <mode> --dry-run` to review non-secret command construction.
 

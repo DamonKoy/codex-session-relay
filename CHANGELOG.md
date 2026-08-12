@@ -4,6 +4,19 @@ All notable changes follow Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-13
+
+### Added
+
+- Added direct DeepSeek V4 Flash support through the official Responses API.
+- Added a versioned DeepSeek V4 model catalog and a Codex CLI 0.144.0 minimum-version gate.
+
+### Changed
+
+- Simplified first use to ask only for the DeepSeek API key; a separate Responses gateway is no longer required.
+- Migrated the v0.2.x pending DeepSeek profile to the official endpoint while preserving explicitly configured custom gateways.
+- Kept DeepSeek credentials in macOS Keychain and the child-process environment instead of copying the official documentation's plaintext-token configuration.
+
 ## [0.2.1] - 2026-08-12
 
 ### Fixed
