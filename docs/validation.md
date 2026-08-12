@@ -8,7 +8,7 @@
 - Python 3.9.13
 - Codex CLI 0.147.0
 - 真实 `state_5.sqlite`：443 个任务，文件与索引 Provider 一致
-- GitHub Actions：`macos-15` ARM64 / Python 3.13 与 `macos-15-intel` / Python 3.9，44 项测试及双次可复现构建通过（[run 31609237054](https://github.com/DamonKoy/codex-session-relay/actions/runs/31609237054)）
+- GitHub Actions：`macos-15` ARM64 / Python 3.13 与 `macos-15-intel` / Python 3.9，49 项测试及双次可复现构建通过（[run 31616826581](https://github.com/DamonKoy/codex-session-relay/actions/runs/31616826581)）
 
 ## 验证矩阵
 
@@ -25,9 +25,9 @@
 | DeepSeek 官方 Responses 地址 | 官方文档 + Codex 0.147.0 使用无效测试 Key 的无状态请求 | Codex 请求到达 `https://api.deepseek.com/responses` 并收到预期 401；未读取或使用真实 Key |
 | DeepSeek V4 模型目录 | 官方目录字段 + 本机 Codex 0.147.0 `debug models` | `deepseek-v4-flash` 目录可被当前 Codex 解析；最低版本固定为 0.144.0 |
 | DeepSeek 认证调用 | 配置、Keychain 注入和失败关闭测试 | 尚未完成真实模型响应、工具调用与流式事件验证；需要维护者测试账户 |
-| ARM64 与 Intel 自动化路径 | GitHub-hosted `macos-15` / Python 3.13 与 `macos-15-intel` / Python 3.9 | v0.3.0 的完整测试、字段长度、可复现构建、校验和与两个 ZipApp 入口冒烟由发布 PR CI 验证 |
+| ARM64 与 Intel 自动化路径 | GitHub-hosted `macos-15` / Python 3.13 与 `macos-15-intel` / Python 3.9 | v0.3.0 的 49 项测试、字段长度、可复现构建、校验和与两个 ZipApp 入口冒烟通过（[run 31616826581](https://github.com/DamonKoy/codex-session-relay/actions/runs/31616826581)） |
 | `codex-model` 快捷启动 | 临时配置 + 假 Codex | GPT/DeepSeek 路由、项目路径、参数透传、首次配置失败关闭通过；真实外部网络仍未调用 |
-| 一键安装 | 离线 Release 模拟 + 临时安装目录 | v0.3.0 两个入口、校验和、升级保留与非 HTTPS 拒绝由自动化覆盖；发布后再验证匿名公开下载 |
+| 一键安装 | 匿名公开下载 + 临时安装目录 | v0.3.0 Release 两项资产 SHA-256 通过且与本地构建逐字节一致；两个入口均报告 0.3.0，状态显示官方 DeepSeek 地址且未读取真实 Key |
 | 其他 macOS/Codex 版本 | 未覆盖 | 不得宣称已验证；不兼容 schema 会失败关闭 |
 
 ## 发布前仍需人工验证
