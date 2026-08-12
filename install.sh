@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION="${CODEX_RELAY_VERSION:-0.2.0}"
+VERSION="${CODEX_RELAY_VERSION:-0.2.1}"
 REPOSITORY="DamonKoy/codex-session-relay"
 ASSET="codex-relay-${VERSION}.pyz"
 RELEASE_BASE="${CODEX_RELAY_RELEASE_BASE:-https://github.com/${REPOSITORY}/releases/download/v${VERSION}}"

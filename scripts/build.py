@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 FIXED_ZIP_TIME = (2020, 1, 1, 0, 0, 0)
 SOURCE_FILES = [
     path

@@ -59,7 +59,7 @@ If installation succeeds but `codex-relay` is not found, run `python3 -m site --
 
 ```bash
 python3 scripts/build.py
-python3 dist/codex-relay-0.2.0.pyz doctor
+python3 dist/codex-relay-0.2.1.pyz doctor
 (cd dist && shasum -a 256 -c SHA256SUMS)
 ```
 
