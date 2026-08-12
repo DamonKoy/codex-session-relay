@@ -80,15 +80,19 @@ def _field(title: str, english: str, chinese: str, reason: str) -> str:
     )
 
 
+def _metric_count(value: int, singular: str, plural: str = "") -> str:
+    return "%s %s" % (value, singular if value == 1 else (plural or singular + "s"))
+
+
 def render(repo: str, role: str, output: Path) -> Dict[str, Any]:
     if role not in ROLE_LABELS:
         raise RelayError("未知角色: %s" % role)
     metrics = fetch_metrics(repo)
     role_en, role_zh = ROLE_LABELS[role]
-    proof = "%s stars, %s forks, and %s public contributors" % (
-        metrics["stars"],
-        metrics["forks"],
-        metrics["contributors"],
+    proof = "%s, %s, and %s" % (
+        _metric_count(metrics["stars"], "star"),
+        _metric_count(metrics["forks"], "fork"),
+        _metric_count(metrics["contributors"], "public contributor"),
     )
     answers = [
         (
