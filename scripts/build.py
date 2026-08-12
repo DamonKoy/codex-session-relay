@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 FIXED_ZIP_TIME = (2020, 1, 1, 0, 0, 0)
 SOURCE_FILES = [
     path
@@ -24,7 +24,7 @@ SOURCE_FILES = [
         & set(path.parts)
     )
     and not any(part.endswith(".egg-info") for part in path.parts)
-    and path.name not in {".coverage", ".DS_Store"}
+    and path.name not in {".coverage", ".DS_Store", "open-source-application-final.md"}
     and not path.name.endswith((".pyc", ".pyo"))
 ]
 
@@ -40,7 +40,7 @@ def zip_info(name: str, executable: bool = False) -> zipfile.ZipInfo:
 def build_pyz(target: Path) -> None:
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-        entry = "from codex_session_relay.cli import main\nraise SystemExit(main())\n"
+        entry = "from codex_session_relay.entrypoint import main\nraise SystemExit(main())\n"
         archive.writestr(zip_info("__main__.py"), entry.encode("utf-8"))
         source_root = ROOT / "src"
         for path in sorted((source_root / "codex_session_relay").rglob("*.py")):

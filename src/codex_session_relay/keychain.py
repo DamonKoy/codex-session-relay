@@ -18,7 +18,7 @@ SECURITY_COMMAND = "/usr/bin/security"
 
 def _require_macos() -> None:
     if sys.platform != "darwin":
-        raise RelayError("v0.1.0 的安全凭证存储仅支持 macOS Keychain")
+        raise RelayError("当前版本的安全凭证存储仅支持 macOS Keychain")
 
 
 def _security_find(service_name: str, account: str) -> Tuple[int, str, str]:

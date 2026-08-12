@@ -10,7 +10,7 @@ body:
     id: version
     attributes:
       label: Relay and Codex versions
-      placeholder: codex-relay 0.1.0; codex-cli x.y.z
+      placeholder: codex-relay 0.2.0; codex-cli x.y.z
     validations:
       required: true
   - type: input

@@ -6,18 +6,41 @@ Codex Session Relay 是一个本地优先的 macOS 命令行工具。它让你�
 
 > **非官方项目，与 OpenAI 或 DeepSeek 无隶属关系。** OpenAI 模式沿用 Codex 官方订阅登录；DeepSeek 等外部模型使用各自的 API Key、额度和计费。Relay 不共享订阅额度、不读取 `auth.json` 内容、不解密推理，也不保证跨 Provider 在原线程续聊。
 
+## 一分钟开始
+
+要求：macOS、Python 3.9+，并已安装或运行过 Codex CLI/桌面版。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DamonKoy/codex-session-relay/main/install.sh | sh
+```
+
+新开终端，在任意项目目录运行：
+
+```bash
+codex-model gpt
+codex-model deepseek
+```
+
+- `gpt` 使用已有 Codex 官方登录态，不读取或复制 `auth.json`。
+- `deepseek` 首次运行会询问 Responses-compatible HTTPS 网关，并以无回显方式把 Key 保存到 macOS Keychain；以后可直接启动。
+- 指定项目：`codex-model gpt /path/to/project`。
+- 传递 Codex 参数：`codex-model deepseek -- --sandbox read-only`。
+- 查看状态：`codex-model status`；接力、迁移等完整功能仍使用 `codex-relay`。
+
+这里的“切换”是为本次启动选择 Provider，不会永久改写 `~/.codex/config.toml`。DeepSeek 官方公开接口目前是 Chat Completions/Anthropic 格式，不是 Codex 所需的 Responses 接口，因此仍需要自有或组织的 `/responses` 网关。
+
 ## 先选择你要做什么
 
 | 目标 | 最短路径 | 是否修改历史数据 |
 | --- | --- | --- |
-| 用 OpenAI 启动 Codex | `codex-relay run openai -- -C "$PWD"` | 否 |
-| 经 Responses 网关使用 DeepSeek | 先配置网关和 Key，再 `run deepseek` | 否 |
+| 用 OpenAI 启动 Codex | `codex-model gpt` | 否 |
+| 经 Responses 网关使用 DeepSeek | `codex-model deepseek`（首次自动配置） | 否 |
 | 把最近任务接力给另一个模型 | `handoff prepare --last` → 审阅 → `show` → `send` | 新建任务，不改原任务 |
 | 修复侧边栏按 Provider 分组 | `history audit` → `plan-normalize` → `apply-normalize` | 是；有备份和回滚 |
 
 如果只是切换模型或接力任务，不需要执行历史迁移。
 
-## 1. 安装与首次检查
+## 手动安装与首次检查
 
 要求：macOS、Python 3.9+，并且 Codex CLI 或桌面版已经运行过。项目无第三方运行时依赖。
 
@@ -51,11 +74,11 @@ source ~/.zshrc
 
 ```bash
 python3 scripts/build.py
-python3 dist/codex-relay-0.1.0.pyz doctor
+python3 dist/codex-relay-0.2.0.pyz doctor
 (cd dist && shasum -a 256 -c SHA256SUMS)
 ```
 
-## 2. 启动 OpenAI 或 DeepSeek
+## 使用底层命令启动 OpenAI 或 DeepSeek
 
 OpenAI 使用现有 Codex 官方认证，Relay 不读取或复制认证内容：
 
@@ -137,6 +160,8 @@ Relay 只修改 JSONL 首行的 `session_meta.payload.model_provider` 和 SQLite
 
 ## 升级与卸载
 
+再次执行一键安装命令即可升级到安装器声明的版本。安装器只接受 HTTPS Release，校验 SHA-256 后才替换文件；默认安装到 `~/.local/bin`，并幂等更新 `~/.zshrc`。如果目标目录已有同名普通文件，会先保留为 `.previous`。
+
 在新源码目录中重新安装即可升级：
 
 ```bash
@@ -149,7 +174,7 @@ python3 -m pip install --user --upgrade .
 python3 -m pip uninstall codex-session-relay
 ```
 
-卸载不会自动删除 `~/.codex-session-relay` 或 macOS 钥匙串中的 Key，避免意外破坏用户数据。请确认不再需要后手动清理。
+一键安装版可删除 `~/.local/bin/codex-relay` 和 `~/.local/bin/codex-model`。卸载不会自动删除 `~/.codex-session-relay` 或 macOS 钥匙串中的 Key，避免意外破坏用户数据。请确认不再需要后手动清理。
 
 ## 安全和开发文档
 

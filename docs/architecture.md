@@ -3,7 +3,7 @@
 ## Components
 
 ```text
-codex-relay CLI
+codex-model shortcut + codex-relay advanced CLI
 ├── provider config (~/.codex-session-relay/config.json, 0600)
 ├── macOS Keychain (external-provider secrets)
 ├── Codex launcher (official auth or external runtime overrides)
@@ -12,7 +12,7 @@ codex-relay CLI
 └── application renderer (public GitHub API)
 ```
 
-The package exposes only the `codex-relay` command as a stable v0.1 interface. Python modules are internal and may change before v1.0.
+The package exposes `codex-model` for the common launch path and `codex-relay` for advanced controls. Python modules are internal and may change before v1.0.
 
 ## Provider data flow
 
@@ -21,6 +21,16 @@ OpenAI uses Codex's existing official authentication. Relay does not parse, copy
 The launcher requires a Responses-compatible endpoint. A Provider's claim of general “OpenAI compatibility” is insufficient because it may expose only Chat Completions. In particular, the DeepSeek profile remains pending until the user explicitly configures a gateway that implements `/responses`; Relay does not operate that gateway.
 
 Both runtime profiles set the local history provider to `custom`; this affects local task grouping, not remote authentication or billing. The actual model remains on each task.
+
+`codex-model gpt|deepseek` supplies Provider overrides to one Codex child process. It does not patch the user's global Codex configuration, so the selection is scoped to that launch and can be inspected with `--dry-run`.
+
+## Installation data flow
+
+1. Fetch the versioned ZipApp and checksum list from the same HTTPS GitHub Release.
+2. Require an exact SHA-256 match before touching the install destination.
+3. Install the executable as `~/.local/bin/codex-relay` and create the `codex-model` alias.
+4. Add the install directory to zsh PATH once; preserve a pre-existing regular target as `.previous`.
+5. Smoke-test both entry points. Installation does not read or change Codex authentication, Relay configuration, Keychain, or task history.
 
 ## Migration data flow
 
