@@ -38,8 +38,11 @@ class ApplicationBuildTests(unittest.TestCase):
             text = output.read_text(encoding="utf-8")
             self.assertIn("0 stars, 0 forks, and 1 public contributors", text.lower())
             lengths = [int(value) for value in re.findall(r"\((\d+)/500 characters\)", text)]
-            self.assertEqual(len(lengths), 5)
+            self.assertEqual(len(lengths), 3)
             self.assertTrue(all(value <= 500 for value in lengths))
+            self.assertIn("**Role**: Primary maintainer", text)
+            self.assertIn("Codex Security; API credits for my project", text)
+            self.assertIn("Fill manually", text)
             self.assertNotIn("[填写", text)
 
     def test_missing_repository_is_rejected(self):
@@ -73,4 +76,3 @@ class ApplicationBuildTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

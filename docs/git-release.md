@@ -7,5 +7,4 @@
 - Security-sensitive PRs require explicit maintainer review; automation cannot auto-merge them.
 - Versions follow Semantic Versioning. Before v1.0, persisted schema changes still require migration notes.
 - Releases require tests, compile checks, deterministic build comparison, checksum verification, secret scanning, changelog updates, and a clean tree.
-- Release tags use `vX.Y.Z` and are created only after the release commit is reviewed. This v0.1.0 implementation creates no tag or remote push.
-
+- Release tags use `vX.Y.Z` and are created only after the release commit and CI are reviewed. Pre-1.0 releases are published as GitHub pre-releases until the documented Alpha limitations are closed.

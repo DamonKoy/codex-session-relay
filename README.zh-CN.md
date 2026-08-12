@@ -1,5 +1,7 @@
 # Codex Session Relay
 
+[![CI](https://github.com/DamonKoy/codex-session-relay/actions/workflows/ci.yml/badge.svg)](https://github.com/DamonKoy/codex-session-relay/actions/workflows/ci.yml)
+
 Codex Session Relay 是一个本地优先的 macOS 命令行工具。它让你在同一个 Codex 项目里安全地使用 OpenAI 官方登录和 DeepSeek 等外部模型，并把已经审阅、脱敏的对话上下文接力到一个新任务。
 
 > **非官方项目，与 OpenAI 或 DeepSeek 无隶属关系。** OpenAI 模式沿用 Codex 官方订阅登录；DeepSeek 等外部模型使用各自的 API Key、额度和计费。Relay 不共享订阅额度、不读取 `auth.json` 内容、不解密推理，也不保证跨 Provider 在原线程续聊。

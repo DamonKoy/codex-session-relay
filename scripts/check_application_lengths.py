@@ -10,11 +10,10 @@ FIELDS = re.findall(
     TEXT,
     flags=re.DOTALL,
 )
-if len(FIELDS) != 5:
-    raise SystemExit("expected 5 English fields, found %s" % len(FIELDS))
+if len(FIELDS) != 3:
+    raise SystemExit("expected 3 English fields, found %s" % len(FIELDS))
 for recorded, field in FIELDS:
     actual = len(field.strip())
     if actual != int(recorded) or actual > 500:
         raise SystemExit("invalid field length: recorded=%s actual=%s" % (recorded, actual))
-print("application fields: 5/5 within 500 characters")
-
+print("application fields: 3/3 within 500 characters")

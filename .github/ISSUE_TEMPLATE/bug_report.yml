@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a reproducible defect without including secrets or private transcripts.
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not paste API keys, auth files, private transcripts, or unredacted session databases. Report security issues through GitHub Private Vulnerability Reporting.
+  - type: input
+    id: version
+    attributes:
+      label: Relay and Codex versions
+      placeholder: codex-relay 0.1.0; codex-cli x.y.z
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: macOS version, architecture, Python version
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Use synthetic or redacted data only.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials, private transcripts, auth files, and personal data.
+          required: true

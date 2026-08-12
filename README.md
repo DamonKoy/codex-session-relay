@@ -1,5 +1,7 @@
 # Codex Session Relay
 
+[![CI](https://github.com/DamonKoy/codex-session-relay/actions/workflows/ci.yml/badge.svg)](https://github.com/DamonKoy/codex-session-relay/actions/workflows/ci.yml)
+
 Codex Session Relay is a local-first macOS CLI for using Codex official authentication alongside separately authenticated Responses-compatible providers and for creating reviewed, redacted handoff tasks across models.
 
 > **Unofficial project. Not affiliated with OpenAI or DeepSeek.** OpenAI mode uses the existing Codex subscription login. External providers use their own API keys, quotas, and billing. Relay does not transfer subscription quota, read `auth.json` contents, decrypt reasoning, or promise same-thread continuation across providers.

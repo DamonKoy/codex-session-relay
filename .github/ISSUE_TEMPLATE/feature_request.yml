@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose a focused, security-aware improvement.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What concrete workflow is blocked or unsafe today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Security and compatibility boundaries
+      description: Describe effects on credentials, transcripts, shell, network, filesystem, providers, or Codex versions.
+    validations:
+      required: true

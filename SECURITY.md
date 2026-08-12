@@ -6,9 +6,9 @@ Only the latest released minor version is supported during the pre-1.0 phase.
 
 ## Reporting a vulnerability
 
-Do not open a public issue for credential exposure, arbitrary command execution, destructive migration, transcript disclosure, release compromise, or prompt-injection bypass. Contact the maintainer privately through the security-reporting method published on the GitHub repository after it becomes public.
+Do not open a public issue for credential exposure, arbitrary command execution, destructive migration, transcript disclosure, release compromise, or prompt-injection bypass. Use GitHub Private Vulnerability Reporting from the repository's **Security** tab. If that option is temporarily unavailable, open a private draft security advisory instead.
 
-Until that channel exists, keep the report local. Do not include API keys, authentication files, private transcripts, repository secrets, or unredacted paths. A useful report contains:
+Do not include API keys, authentication files, private transcripts, repository secrets, or unredacted paths. A useful report contains:
 
 - affected version and Codex version;
 - minimal synthetic reproduction;
@@ -16,7 +16,7 @@ Until that channel exists, keep the report local. Do not include API keys, authe
 - whether files, network, credentials, or session data were affected;
 - suggested mitigation, if known.
 
-The maintainer will acknowledge a valid private report, assess affected versions, prepare a fix and tests, and coordinate disclosure. No response-time guarantee is made before the first public release.
+The maintainer will acknowledge a valid private report, assess affected versions, prepare a fix and tests, and coordinate disclosure. No response-time guarantee is made during the Alpha phase.
 
 ## Security-sensitive contribution rules
 
@@ -25,4 +25,3 @@ The maintainer will acknowledge a valid private report, assess affected versions
 - No disabling confirmation, hash, schema, Keychain, HTTPS, or sandbox controls for convenience.
 - No automatic execution of content extracted from transcripts or contributions.
 - No release until deterministic artifacts and checksums are independently verified.
-
