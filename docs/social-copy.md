@@ -1,8 +1,8 @@
 # X/Twitter launch copy
 
-> The repository and v0.1.0 Alpha release are public. The v0.2.0 one-click-install copy below is a release candidate and must not be posted until its public Release resolves. Character counts use Unicode code points; verify X's weighted length manually. Do not automate publication.
+> Ready for manual posting: the repository and v0.2.0 Alpha release are public and the one-line installer has been verified from anonymous public downloads. Character counts use Unicode code points; verify X's weighted length manually. Do not automate publication.
 
-## Recommended v0.2.0 post — publish only after release verification
+## Recommended v0.2.0 post
 
 Codex Session Relay v0.2.0：一条命令安装，`codex-model gpt` / `codex-model deepseek` 即可按次启动不同 Provider。官方登录与外部 Key/计费保持独立；DeepSeek 首次配置网关，密钥进 Keychain。Unofficial. https://github.com/DamonKoy/codex-session-relay
 
