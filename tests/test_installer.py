@@ -47,7 +47,7 @@ class InstallerTests(unittest.TestCase):
                     capture_output=True,
                     text=True,
                 )
-                self.assertEqual(version.stdout.strip(), "0.2.0")
+                self.assertEqual(version.stdout.strip(), "0.2.1")
 
     def test_insecure_release_source_is_rejected(self):
         env = dict(os.environ)
@@ -73,9 +73,9 @@ class InstallerTests(unittest.TestCase):
             install_dir = temp / "bin"
             release.mkdir()
             install_dir.mkdir()
-            shutil.copy2(ROOT / "dist" / "codex-relay-0.2.0.pyz", release)
+            shutil.copy2(ROOT / "dist" / "codex-relay-0.2.1.pyz", release)
             (release / "SHA256SUMS").write_text(
-                "%s  codex-relay-0.2.0.pyz\n" % ("0" * 64), encoding="utf-8"
+                "%s  codex-relay-0.2.1.pyz\n" % ("0" * 64), encoding="utf-8"
             )
             target = install_dir / "codex-relay"
             target.write_text("existing installation\n", encoding="utf-8")

@@ -4,6 +4,13 @@ All notable changes follow Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-12
+
+### Fixed
+
+- Corrected singular and plural GitHub metric wording in generated open-source application text.
+- Aligned the default one-line installer with the post-release application and validation documentation fixes.
+
 ## [0.2.0] - 2026-08-12
 
 ### Added

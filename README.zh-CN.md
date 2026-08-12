@@ -74,7 +74,7 @@ source ~/.zshrc
 
 ```bash
 python3 scripts/build.py
-python3 dist/codex-relay-0.2.0.pyz doctor
+python3 dist/codex-relay-0.2.1.pyz doctor
 (cd dist && shasum -a 256 -c SHA256SUMS)
 ```
 

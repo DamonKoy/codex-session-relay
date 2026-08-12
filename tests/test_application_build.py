@@ -71,12 +71,12 @@ class ApplicationBuildTests(unittest.TestCase):
         }
         self.assertEqual(first, second)
         result = subprocess.run(
-            ["python3", str(ROOT / "dist" / "codex-relay-0.2.0.pyz"), "--version"],
+            ["python3", str(ROOT / "dist" / "codex-relay-0.2.1.pyz"), "--version"],
             check=True,
             capture_output=True,
             text=True,
         )
-        self.assertEqual(result.stdout.strip(), "0.2.0")
+        self.assertEqual(result.stdout.strip(), "0.2.1")
 
 
 if __name__ == "__main__":
