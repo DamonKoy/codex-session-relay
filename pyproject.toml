@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codex-session-relay"
+version = "0.1.0"
+description = "Safe provider switching and reviewed cross-model handoffs for Codex"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "DamonKoy" }]
+keywords = ["codex", "deepseek", "ai-agent", "handoff", "security"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Topic :: Software Development :: Tools",
+]
+dependencies = []
+
+[project.scripts]
+codex-relay = "codex_session_relay.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/DamonKoy/codex-session-relay"
+Issues = "https://github.com/DamonKoy/codex-session-relay/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
