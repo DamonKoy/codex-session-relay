@@ -1,6 +1,6 @@
 # X/Twitter launch copy
 
-> Draft for manual posting after the v0.3.0 release is public and its anonymous installer verification passes. Character counts use Unicode code points; verify X's weighted length manually. Do not automate publication.
+> Ready for manual posting: the v0.3.0 prerelease is public and its anonymous installer verification passed. Character counts use Unicode code points; verify X's weighted length manually. Do not automate publication.
 
 ## Recommended v0.3.0 post
 
