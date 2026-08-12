@@ -16,7 +16,16 @@ from .paths import codex_home, state_db_path
 from .util import sha256_bytes
 
 
-REQUIRED_THREAD_COLUMNS = {"id", "model_provider", "model", "title", "rollout_path"}
+REQUIRED_THREAD_COLUMNS = {
+    "id",
+    "name",
+    "model_provider",
+    "model",
+    "title",
+    "rollout_path",
+    "cwd",
+    "updated_at_ms",
+}
 
 
 def binary_path() -> str:
@@ -77,6 +86,56 @@ def schema_fingerprint() -> str:
     )
 
 
+def list_sessions(project: Optional[Path] = None, limit: int = 20) -> List[Dict[str, Any]]:
+    thread_schema()
+    if limit < 1 or limit > 200:
+        raise RelayError("--limit 必须在 1 到 200 之间")
+    parameters: List[Any] = []
+    where = ""
+    if project is not None:
+        expanded = project.expanduser()
+        try:
+            resolved = expanded.resolve(strict=True)
+        except FileNotFoundError as error:
+            raise RelayError("项目路径不存在: %s" % project) from error
+        if not resolved.is_dir():
+            raise RelayError("项目路径不是目录: %s" % resolved)
+        candidates = list(dict.fromkeys((str(expanded.absolute()), str(resolved))))
+        where = "WHERE cwd IN (%s)" % ", ".join("?" for _ in candidates)
+        parameters.extend(candidates)
+    parameters.append(limit)
+    with sqlite3.connect(str(state_db_path())) as connection:
+        connection.row_factory = sqlite3.Row
+        rows = connection.execute(
+            "SELECT id, title, model, model_provider, cwd, updated_at_ms "
+            "FROM threads %s ORDER BY updated_at_ms DESC LIMIT ?" % where,
+            tuple(parameters),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_session(session_id: str) -> Dict[str, Any]:
+    thread_schema()
+    with sqlite3.connect(str(state_db_path())) as connection:
+        connection.row_factory = sqlite3.Row
+        row = connection.execute(
+            "SELECT id, title, model, model_provider, cwd, rollout_path, updated_at_ms "
+            "FROM threads WHERE id=? OR name=? ORDER BY updated_at_ms DESC LIMIT 1",
+            (session_id, session_id),
+        ).fetchone()
+    if row is None:
+        raise RelayError("找不到任务: %s" % session_id)
+    return dict(row)
+
+
+def latest_session_id(project: Optional[Path] = None) -> str:
+    rows = list_sessions(project=project, limit=1)
+    if not rows:
+        scope = "当前项目" if project else "Codex"
+        raise RelayError("%s没有可用任务" % scope)
+    return rows[0]["id"]
+
+
 def active_clients() -> List[str]:
     if os.environ.get("CODEX_SESSION_RELAY_TEST_MODE") == "1":
         return []
@@ -119,6 +178,12 @@ def runtime(
             options.extend(["-m", model_override])
         return options, environment, model_override
 
+    if not provider.get("base_url"):
+        raise RelayError(
+            "Provider %s 尚未配置 Responses-compatible 地址；请先运行 "
+            "codex-relay provider configure %s --base-url <HTTPS地址>"
+            % (provider_name, provider_name)
+        )
     secret = keychain.read_secret(provider["keychain_service"])
     if not secret:
         raise RelayError(
@@ -220,6 +285,14 @@ def doctor(config: Dict[str, Any]) -> Dict[str, Any]:
     for name, provider in sorted(config["providers"].items()):
         if provider["auth_mode"] != "api_key":
             continue
+        if not provider.get("base_url"):
+            checks.append(
+                {
+                    "name": "provider_endpoint:%s" % name,
+                    "status": "warning",
+                    "detail": "missing",
+                }
+            )
         try:
             present = bool(keychain.read_secret(provider["keychain_service"]))
             status = "ok" if present else "warning"
@@ -233,4 +306,3 @@ def doctor(config: Dict[str, Any]) -> Dict[str, Any]:
         "ok": not any(check["status"] == "error" for check in checks),
         "checks": checks,
     }
-

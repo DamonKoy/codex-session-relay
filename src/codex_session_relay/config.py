@@ -26,10 +26,11 @@ BUILTIN_PROVIDERS: Dict[str, Dict[str, Any]] = {
         "display_name": "DeepSeek",
         "auth_mode": "api_key",
         "model": "deepseek-v4-flash",
-        "base_url": "https://api.deepseek.com/",
+        "base_url": None,
         "wire_api": "responses",
         "keychain_service": "codex-session-relay.provider.deepseek",
         "env_key": "OPENAI_API_KEY",
+        "setup_required": "responses_gateway",
     },
 }
 
@@ -44,6 +45,11 @@ def default_config() -> Dict[str, Any]:
 
 def validate_base_url(value: str, allow_insecure_localhost: bool = False) -> str:
     parsed = urlparse(value)
+    if parsed.hostname == "api.deepseek.com":
+        raise RelayError(
+            "DeepSeek 官方地址当前不提供 Codex 所需的 Responses API；"
+            "请填写一个明确支持 /responses 的网关地址"
+        )
     if parsed.scheme == "https" and parsed.hostname:
         return value.rstrip("/") + "/"
     localhost = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
@@ -72,16 +78,21 @@ def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
             raise RelayError("Provider auth_mode 无效: %s" % name)
         if provider.get("auth_mode") == "api_key":
             base_url = provider.get("base_url")
-            if not isinstance(base_url, str):
+            pending_gateway = (
+                base_url is None
+                and provider.get("setup_required") == "responses_gateway"
+            )
+            if not isinstance(base_url, str) and not pending_gateway:
                 raise RelayError("外部 Provider 缺少 base_url: %s" % name)
-            parsed = urlparse(base_url)
-            local_http = parsed.scheme == "http" and parsed.hostname in {
-                "localhost",
-                "127.0.0.1",
-                "::1",
-            }
-            if parsed.scheme != "https" and not local_http:
-                raise RelayError("外部 Provider base_url 不安全: %s" % name)
+            if isinstance(base_url, str):
+                parsed = urlparse(base_url)
+                local_http = parsed.scheme == "http" and parsed.hostname in {
+                    "localhost",
+                    "127.0.0.1",
+                    "::1",
+                }
+                if parsed.scheme != "https" and not local_http:
+                    raise RelayError("外部 Provider base_url 不安全: %s" % name)
             for key in ("model", "keychain_service", "env_key"):
                 if not provider.get(key):
                     raise RelayError("外部 Provider 缺少 %s: %s" % (key, name))
@@ -95,7 +106,23 @@ def load_config(create: bool = True) -> Dict[str, Any]:
         if create:
             save_config(config)
         return config
-    config = validate_config(read_json(path))
+    config = read_json(path)
+    deepseek = (config.get("providers") or {}).get("deepseek") or {}
+    if (
+        deepseek.get("wire_api") == "responses"
+        and deepseek.get("base_url") in {
+            "https://api.deepseek.com",
+            "https://api.deepseek.com/",
+        }
+    ):
+        # Early v0.1.0 drafts incorrectly assumed that DeepSeek's official
+        # OpenAI-compatible API included /responses. Preserve the profile and
+        # Keychain reference, but require a real Responses gateway explicitly.
+        config = copy.deepcopy(config)
+        config["providers"]["deepseek"]["base_url"] = None
+        config["providers"]["deepseek"]["setup_required"] = "responses_gateway"
+        save_config(config)
+    config = validate_config(config)
     if path.stat().st_mode & 0o077:
         raise RelayError("配置权限过宽，应为 0600: %s" % path)
     return config
@@ -145,3 +172,23 @@ def add_provider(
     save_config(updated)
     return updated
 
+
+def configure_provider(
+    config: Dict[str, Any],
+    name: str,
+    base_url: str,
+    model: str,
+    env_key: str,
+    allow_insecure_localhost: bool,
+) -> Dict[str, Any]:
+    provider = get_provider(config, name)
+    if provider["auth_mode"] != "api_key":
+        raise RelayError("官方认证 Provider 不允许配置外部 API 地址")
+    updated = copy.deepcopy(config)
+    target = updated["providers"][name]
+    target["base_url"] = validate_base_url(base_url, allow_insecure_localhost)
+    target["model"] = model or target["model"]
+    target["env_key"] = env_key or target["env_key"]
+    target.pop("setup_required", None)
+    save_config(updated)
+    return updated

@@ -19,6 +19,7 @@
 ## Controls
 
 - HTTPS is mandatory except explicitly confirmed loopback HTTP.
+- Known Chat-Completions-only endpoints are not presented as Responses-compatible; DeepSeek requires an explicit gateway configuration.
 - External credentials live in Keychain and never appear in persistent config or command arguments.
 - Handoff extraction is an allowlist; system/developer content, reasoning, encrypted content, and tools are excluded.
 - Secret patterns are redacted at prepare time and scanned again after editing.
@@ -35,4 +36,3 @@
 - Claiming protection against every secret format or prompt-injection technique.
 
 Secret scanning is defense in depth, not a guarantee. Users must review every handoff package before supplying its current digest.
-

@@ -1,134 +1,103 @@
 # Codex Session Relay
 
-Codex Session Relay is a local-first macOS CLI for safely using Codex official authentication alongside separately authenticated Responses-compatible model providers. It keeps Relay-created tasks in one local history bucket and creates reviewed, redacted handoff tasks across providers.
+Codex Session Relay is a local-first macOS CLI for using Codex official authentication alongside separately authenticated Responses-compatible providers and for creating reviewed, redacted handoff tasks across models.
 
-> **Unofficial project. Not affiliated with OpenAI or DeepSeek.** A Codex subscription and an external-provider API account remain separate authentication, quota, billing, and trust domains. This project does not transfer subscription quota, decrypt model reasoning, or guarantee same-thread continuation across providers.
+> **Unofficial project. Not affiliated with OpenAI or DeepSeek.** OpenAI mode uses the existing Codex subscription login. External providers use their own API keys, quotas, and billing. Relay does not transfer subscription quota, read `auth.json` contents, decrypt reasoning, or promise same-thread continuation across providers.
 
 [中文说明](README.zh-CN.md) · [Security model](docs/security-model.md) · [Operations](docs/operations.md) · [Roadmap](docs/roadmap.md)
 
-## What it provides
+## Choose your goal
 
-- Provider launch profiles that share the local `custom` history bucket while preserving the real model name.
-- Codex official authentication for OpenAI and macOS Keychain-backed API keys for external providers.
-- Read-only audits plus SHA-256-confirmed, backed-up, reversible provider normalization and title tagging.
-- Two-stage handoff packages containing only readable user/assistant messages, with secret redaction and prompt-injection warnings.
-- Read-only target sandboxes by default; `workspace-write` must be selected explicitly.
-- A public-GitHub-data renderer for the Codex for Open Source application.
+| Goal | Shortest path | Changes history? |
+| --- | --- | --- |
+| Start Codex with OpenAI | `codex-relay run openai -- -C "$PWD"` | No |
+| Route DeepSeek through a Responses gateway | Configure gateway and key, then `run deepseek` | No |
+| Handoff the latest task | `prepare --last`, review, `show`, `send` | Creates a new task |
+| Repair provider-split sidebar history | `audit`, `plan-normalize`, `apply-normalize` | Yes, with backup and rollback |
 
-## Requirements
+You do not need history migration to switch providers or hand off a task.
 
-- macOS
-- Python 3.9 or newer
-- Codex CLI/Desktop with a local `state_5.sqlite` task index
-- A valid Codex official login for the OpenAI profile
-- A separately funded API key for each external provider
+## Install and check
 
-No runtime third-party Python packages are required.
-
-## Install from source
+Requirements: macOS, Python 3.9+, and a previously used Codex CLI/Desktop installation. There are no third-party runtime dependencies.
 
 ```bash
+cd /path/to/codex-session-relay
 python3 -m pip install --user .
 codex-relay --version
 codex-relay doctor
 ```
 
-Or build and run the standalone ZipApp:
+`doctor` reports Passed, Setup needed, or Error. A missing DeepSeek Responses gateway or key is only a setup item and does not block OpenAI. Use `codex-relay doctor --json` for machine-readable output.
+
+If installation succeeds but `codex-relay` is not found, run `python3 -m site --user-base` and add its `bin` directory to `PATH`. You can also build and use the standalone ZipApp:
 
 ```bash
 python3 scripts/build.py
-python3 dist/codex-relay-0.1.0.pyz --help
+python3 dist/codex-relay-0.1.0.pyz doctor
 (cd dist && shasum -a 256 -c SHA256SUMS)
 ```
 
-## Provider workflow
+## Run a provider
 
-The built-in profiles are `openai` and `deepseek`:
+OpenAI uses existing Codex official authentication; Relay neither reads nor copies its contents:
 
 ```bash
-codex-relay provider list
-codex-relay provider show deepseek
+codex-relay run openai -- -C "$PWD"
+```
+
+Current Codex builds accept the Responses wire API, while DeepSeek's public official API exposes Chat Completions. Do not configure `https://api.deepseek.com` directly. Supply a self-hosted or organizational gateway that explicitly implements `/responses` and routes to DeepSeek:
+
+```bash
+codex-relay provider configure deepseek \
+  --base-url https://YOUR_RESPONSES_GATEWAY/v1
 codex-relay key set deepseek
 codex-relay key status deepseek
-
-# Codex official authentication; no API key is copied by Relay.
-codex-relay run openai -- -C "$PWD"
-
-# DeepSeek API key comes from macOS Keychain and is billed by DeepSeek.
 codex-relay run deepseek -- -C "$PWD"
 ```
 
-Add another Responses-compatible provider:
+Relay does not provide or operate that gateway. The key is not written to configuration, argv, logs, handoff packages, or Git files. External usage is billed by the configured gateway/provider account. To inspect the non-secret launch command first, add `--dry-run`.
+
+## Handoff to another model
+
+Use the latest task for the current project:
 
 ```bash
-codex-relay provider add example \
-  --display-name "Example Provider" \
-  --model example-model \
-  --base-url https://api.example.com/v1
-codex-relay key set example
+codex-relay handoff prepare --last --project "$PWD" --to deepseek
 ```
 
-Remote HTTP URLs are rejected. Local HTTP is available only for `localhost`, `127.0.0.1`, or `::1` with `--allow-insecure-localhost`.
+Or select an older task:
 
-## Safe session normalization
+```bash
+codex-relay session list --project "$PWD"
+codex-relay handoff prepare <session-id> --to deepseek
+```
 
-Audit is read-only. Applying changes requires Codex/ChatGPT to be closed and the exact plan digest to be supplied:
+`prepare` only creates a local package. Review `context.md` and `risk-report.md`, remove anything unnecessary, then run the exact `handoff show` command printed by the CLI. `show` prints the current SHA-256 and a complete copyable `send` command.
+
+`send` re-scans edited content, transfers it through stdin, creates a new task, and defaults to `--sandbox read-only`. It excludes system/developer messages, reasoning, encrypted content, tool calls, and tool output. Historical text is explicitly wrapped as untrusted data.
+
+## Normalize history only when needed
 
 ```bash
 codex-relay history audit
 codex-relay history plan-normalize --output /tmp/relay-plan.json
-# Review the plan and copy confirmation_sha256 from it.
-codex-relay history apply-normalize \
-  --plan /tmp/relay-plan.json \
-  --confirm <sha256>
 ```
 
-The command backs up SQLite and every original JSONL first line. It changes only `session_meta.payload.model_provider` and the matching `threads.model_provider`, then verifies the untouched tail of every session.
+`audit` is read-only. `plan-normalize` changes nothing and prints the full SHA-256-confirmed apply command. Review the plan and quit Codex/ChatGPT before copying that command. A successful apply prints the backup directory and full rollback command.
 
-Rollback uses the backup manifest digest:
+Relay changes only `session_meta.payload.model_provider` and the matching SQLite index. It verifies unchanged transcript tails and fails closed on active clients, unknown schemas, changed files, locks, or digest mismatches.
 
-```bash
-codex-relay history rollback --backup <backup-dir> --confirm <manifest-sha256>
-```
+## Common issues
 
-Title tags use the same plan/confirm pattern:
+- Missing DeepSeek endpoint: ignore it when using only OpenAI, or configure a genuine Responses-compatible gateway; the official Chat Completions URL is rejected.
+- Missing external key: follow the gateway's credential requirements and run `key set`.
+- Missing official authentication: run `codex login` or sign in through Codex Desktop.
+- No task found: run a Codex task first; make sure `--project` matches its working directory.
+- Digest mismatch: re-run `handoff show` or regenerate the migration plan; never bypass the check.
+- Active client: quit Codex and ChatGPT before migration or rollback.
+- Unknown schema: stop and upgrade Relay or report a compatibility issue.
 
-```bash
-codex-relay history tag-plan --output /tmp/tag-plan.json
-codex-relay history tag-apply --plan /tmp/tag-plan.json --confirm <sha256>
-# To remove Relay prefixes, create a new plan with --remove.
-```
+Upgrade with `python3 -m pip install --user --upgrade .` and uninstall with `python3 -m pip uninstall codex-session-relay`. Uninstall intentionally preserves `~/.codex-session-relay` and Keychain items to avoid deleting user data.
 
-## Safe cross-provider handoff
-
-Handoff never silently resumes an existing cross-provider thread:
-
-```bash
-codex-relay handoff prepare <session-id> --to deepseek
-codex-relay handoff show <package-dir>
-# Review/edit context.md, then copy the current context_sha256.
-codex-relay handoff send <package-dir> --confirm <sha256>
-```
-
-`prepare` excludes system/developer messages, reasoning, encrypted content, tool calls, and tool outputs. `send` re-scans edited content for secrets, sends it through stdin, creates a new task, and defaults to `--sandbox read-only`.
-
-## Codex for Open Source application
-
-The repository includes a clearly marked pre-publication draft. After the repository is public, generate a final version from live GitHub metrics:
-
-```bash
-codex-relay application render \
-  --repo DamonKoy/codex-session-relay \
-  --role creator \
-  --output open-source-application-final.md
-```
-
-The renderer refuses a missing/private repository and validates all five English fields against the 500-character limit.
-
-## Trust boundaries
-
-Provider configuration, transcripts, repository content, model output, and third-party contributions are untrusted. See [SECURITY.md](SECURITY.md) and the [security model](docs/security-model.md) before enabling writes.
-
-## License
-
-Apache-2.0. See [LICENSE](LICENSE).
+See [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md), the [architecture](docs/architecture.md), [validation status](docs/validation.md), [operations guide](docs/operations.md), and [Git/release process](docs/git-release.md). Apache-2.0; see [LICENSE](LICENSE).

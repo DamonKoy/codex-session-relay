@@ -18,6 +18,8 @@ The package exposes only the `codex-relay` command as a stable v0.1 interface. P
 
 OpenAI uses Codex's existing official authentication. Relay does not parse, copy, or export the authentication file. External providers reference a Keychain service in configuration. The secret is retrieved immediately before launch and injected only into the child environment.
 
+The launcher requires a Responses-compatible endpoint. A Provider's claim of general “OpenAI compatibility” is insufficient because it may expose only Chat Completions. In particular, the DeepSeek profile remains pending until the user explicitly configures a gateway that implements `/responses`; Relay does not operate that gateway.
+
 Both runtime profiles set the local history provider to `custom`; this affects local task grouping, not remote authentication or billing. The actual model remains on each task.
 
 ## Migration data flow
@@ -39,4 +41,3 @@ Both runtime profiles set the local history provider to `custom`; this affects l
 5. Recompute the digest and rescan the edited context before send.
 6. Wrap history as untrusted data and pass it over stdin to a new read-only Codex task.
 7. Persist only a metadata mapping, never the prompt or secret.
-

@@ -310,7 +310,12 @@ def apply_normalize(plan_path: Path, confirm: str) -> Dict[str, Any]:
         except Exception:
             _restore_backup(backup)
             raise
-    return {"updated": len(plan["items"]), "backup": str(backup)}
+    backup_manifest = read_json(backup / "manifest.json")
+    return {
+        "updated": len(plan["items"]),
+        "backup": str(backup),
+        "rollback_confirmation_sha256": backup_manifest["confirmation_sha256"],
+    }
 
 
 def rollback(backup: Path, confirm: str) -> Dict[str, Any]:

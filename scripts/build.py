@@ -19,9 +19,12 @@ SOURCE_FILES = [
     path
     for path in sorted(ROOT.rglob("*"))
     if path.is_file()
-    and ".git" not in path.parts
-    and "dist" not in path.parts
-    and "__pycache__" not in path.parts
+    and not (
+        {".git", "dist", "build", "__pycache__", ".pytest_cache", ".venv"}
+        & set(path.parts)
+    )
+    and not any(part.endswith(".egg-info") for part in path.parts)
+    and path.name not in {".coverage", ".DS_Store"}
     and not path.name.endswith((".pyc", ".pyo"))
 ]
 
@@ -90,4 +93,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

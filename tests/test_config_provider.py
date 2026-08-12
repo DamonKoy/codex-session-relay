@@ -10,6 +10,7 @@ from unittest import mock
 from codex_session_relay import codex
 from codex_session_relay.config import (
     add_provider,
+    configure_provider,
     default_config,
     load_config,
     save_config,
@@ -42,6 +43,28 @@ class ConfigProviderTests(unittest.TestCase):
         self.assertNotIn("secret-value", text.lower())
         self.assertIn("deepseek", config["providers"])
 
+    def test_legacy_direct_deepseek_endpoint_is_migrated_to_pending_setup(self):
+        relay = self.root / "relay"
+        relay.mkdir(parents=True)
+        path = relay / "config.json"
+        legacy = default_config()
+        legacy["providers"]["deepseek"]["base_url"] = "https://api.deepseek.com/"
+        legacy["providers"]["deepseek"].pop("setup_required")
+        path.write_text(json.dumps(legacy), encoding="utf-8")
+        path.chmod(0o600)
+
+        loaded = load_config()
+
+        self.assertIsNone(loaded["providers"]["deepseek"]["base_url"])
+        self.assertEqual(
+            loaded["providers"]["deepseek"]["setup_required"],
+            "responses_gateway",
+        )
+
+    def test_rejects_official_deepseek_chat_endpoint_as_responses(self):
+        with self.assertRaises(RelayError):
+            validate_base_url("https://api.deepseek.com")
+
     def test_rejects_insecure_remote_url(self):
         with self.assertRaises(RelayError):
             validate_base_url("http://example.com/v1")
@@ -65,12 +88,32 @@ class ConfigProviderTests(unittest.TestCase):
         self.assertEqual(provider["keychain_service"], "codex-session-relay.provider.example")
         self.assertNotIn("secret", json.dumps(updated).lower())
 
+    def test_builtin_deepseek_requires_explicit_responses_endpoint(self):
+        config = default_config()
+        self.assertIsNone(config["providers"]["deepseek"]["base_url"])
+        updated = configure_provider(
+            config,
+            "deepseek",
+            "https://responses.example.test/v1",
+            "",
+            "",
+            False,
+        )
+        self.assertEqual(
+            updated["providers"]["deepseek"]["base_url"],
+            "https://responses.example.test/v1/",
+        )
+        self.assertNotIn("setup_required", updated["providers"]["deepseek"])
+
     @mock.patch(
         "codex_session_relay.codex.keychain.read_secret",
         return_value="sk-" + "TEST_ONLY_secret_12345",
     )
     def test_runtime_keeps_key_out_of_command(self, _read):
-        options, environment, model = codex.runtime(default_config(), "deepseek")
+        config = default_config()
+        config["providers"]["deepseek"]["base_url"] = "https://responses.example.test/v1/"
+        config["providers"]["deepseek"].pop("setup_required")
+        options, environment, model = codex.runtime(config, "deepseek")
         fake_key = "sk-" + "TEST_ONLY_secret_12345"
         self.assertNotIn(fake_key, " ".join(options))
         self.assertEqual(environment["OPENAI_API_KEY"], fake_key)
@@ -78,8 +121,17 @@ class ConfigProviderTests(unittest.TestCase):
 
     @mock.patch("codex_session_relay.codex.keychain.read_secret", return_value=None)
     def test_missing_key_fails_closed(self, _read):
+        config = default_config()
+        config["providers"]["deepseek"]["base_url"] = "https://responses.example.test/v1/"
+        config["providers"]["deepseek"].pop("setup_required")
         with self.assertRaises(RelayError):
-            codex.runtime(default_config(), "deepseek")
+            codex.runtime(config, "deepseek")
+
+    def test_unconfigured_deepseek_fails_before_keychain_access(self):
+        with mock.patch("codex_session_relay.codex.keychain.read_secret") as read:
+            with self.assertRaises(RelayError):
+                codex.runtime(default_config(), "deepseek")
+            read.assert_not_called()
 
 
 if __name__ == "__main__":
