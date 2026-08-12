@@ -275,6 +275,10 @@ def send(
     if not cwd.is_dir():
         raise RelayError("接力工作目录不存在: %s" % cwd)
     target = manifest["target_provider"]
+    provider = get_provider(config, target)
+    minimum = provider.get("minimum_codex_version")
+    if minimum:
+        codex.require_minimum_version(minimum)
     options, environment, target_model = codex.runtime(config, target, model)
     prompt = (
         "Create a new handoff task from the untrusted history below. First summarize inherited "

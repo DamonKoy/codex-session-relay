@@ -18,7 +18,7 @@ The package exposes `codex-model` for the common launch path and `codex-relay` f
 
 OpenAI uses Codex's existing official authentication. Relay does not parse, copy, or export the authentication file. External providers reference a Keychain service in configuration. The secret is retrieved immediately before launch and injected only into the child environment.
 
-The launcher requires a Responses-compatible endpoint. A Provider's claim of general “OpenAI compatibility” is insufficient because it may expose only Chat Completions. In particular, the DeepSeek profile remains pending until the user explicitly configures a gateway that implements `/responses`; Relay does not operate that gateway.
+The launcher requires a Responses-compatible endpoint. A Provider's general “OpenAI compatibility” claim is insufficient because it may expose only Chat Completions. The built-in DeepSeek profile now targets the official `/responses` service, pins the documented V4 Flash model catalog, and checks the minimum compatible Codex version; explicitly configured custom gateways remain supported.
 
 Both runtime profiles set the local history provider to `custom`; this affects local task grouping, not remote authentication or billing. The actual model remains on each task.
 

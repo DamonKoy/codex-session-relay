@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from . import keychain
+from . import catalog, keychain
 from .config import get_provider
 from .errors import RelayError
 from .paths import codex_home, state_db_path
@@ -48,6 +48,20 @@ def version() -> str:
         raise RelayError("无法读取 Codex CLI 版本")
     match = re.search(r"codex-cli\s+([^\s]+)", process.stdout)
     return match.group(1) if match else process.stdout.strip()
+
+
+def require_minimum_version(minimum: str) -> None:
+    current = version()
+    current_match = re.match(r"^(\d+)\.(\d+)\.(\d+)", current)
+    minimum_match = re.match(r"^(\d+)\.(\d+)\.(\d+)$", minimum)
+    if not current_match or not minimum_match:
+        raise RelayError("无法确认 Codex CLI 版本是否支持此 Provider: %s" % current)
+    current_parts = tuple(int(value) for value in current_match.groups())
+    minimum_parts = tuple(int(value) for value in minimum_match.groups())
+    if current_parts < minimum_parts:
+        raise RelayError(
+            "Provider 需要 Codex CLI %s+；当前版本为 %s" % (minimum, current)
+        )
 
 
 def thread_schema() -> List[Dict[str, Any]]:
@@ -159,6 +173,7 @@ def runtime(
     environment = dict(os.environ)
     environment.pop("OPENAI_BASE_URL", None)
     environment.pop("OPENAI_API_BASE", None)
+    environment.pop("DEEPSEEK_API_KEY", None)
     options = ["-c", 'model_provider="custom"']
     if provider["auth_mode"] == "codex_official":
         environment.pop("OPENAI_API_KEY", None)
@@ -192,6 +207,16 @@ def runtime(
         )
     environment[provider["env_key"]] = secret
     model = model_override or provider["model"]
+    if provider.get("model_catalog") == "deepseek-v4":
+        model_catalog = catalog.ensure_deepseek_v4_catalog()
+        options.extend(
+            [
+                "-c",
+                "model_catalog_json=%s" % _toml_string(str(model_catalog)),
+                "-c",
+                'model_reasoning_effort="high"',
+            ]
+        )
     options.extend(
         [
             "-m",
@@ -226,6 +251,10 @@ def run_provider(
     passthrough: List[str],
     dry_run: bool,
 ) -> int:
+    provider = get_provider(config, provider_name)
+    minimum = provider.get("minimum_codex_version")
+    if minimum:
+        require_minimum_version(minimum)
     options, environment, target_model = runtime(config, provider_name, model)
     command = [binary_path()] + options + passthrough
     if dry_run:
@@ -239,8 +268,7 @@ def run_provider(
                     "history_model_provider": "custom",
                     "api_key_source": (
                         "Codex official authentication"
-                        if get_provider(config, provider_name)["auth_mode"]
-                        == "codex_official"
+                        if provider["auth_mode"] == "codex_official"
                         else "macOS Keychain"
                     ),
                     "command": command,

@@ -23,14 +23,15 @@ BUILTIN_PROVIDERS: Dict[str, Dict[str, Any]] = {
         "env_key": None,
     },
     "deepseek": {
-        "display_name": "DeepSeek",
+        "display_name": "DeepSeek Official",
         "auth_mode": "api_key",
         "model": "deepseek-v4-flash",
-        "base_url": None,
+        "base_url": "https://api.deepseek.com/",
         "wire_api": "responses",
         "keychain_service": "codex-session-relay.provider.deepseek",
-        "env_key": "OPENAI_API_KEY",
-        "setup_required": "responses_gateway",
+        "env_key": "DEEPSEEK_API_KEY",
+        "model_catalog": "deepseek-v4",
+        "minimum_codex_version": "0.144.0",
     },
 }
 
@@ -45,11 +46,6 @@ def default_config() -> Dict[str, Any]:
 
 def validate_base_url(value: str, allow_insecure_localhost: bool = False) -> str:
     parsed = urlparse(value)
-    if parsed.hostname == "api.deepseek.com":
-        raise RelayError(
-            "DeepSeek 官方地址当前不提供 Codex 所需的 Responses API；"
-            "请填写一个明确支持 /responses 的网关地址"
-        )
     if parsed.scheme == "https" and parsed.hostname:
         return value.rstrip("/") + "/"
     localhost = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
@@ -78,11 +74,7 @@ def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
             raise RelayError("Provider auth_mode 无效: %s" % name)
         if provider.get("auth_mode") == "api_key":
             base_url = provider.get("base_url")
-            pending_gateway = (
-                base_url is None
-                and provider.get("setup_required") == "responses_gateway"
-            )
-            if not isinstance(base_url, str) and not pending_gateway:
+            if not isinstance(base_url, str):
                 raise RelayError("外部 Provider 缺少 base_url: %s" % name)
             if isinstance(base_url, str):
                 parsed = urlparse(base_url)
@@ -108,19 +100,37 @@ def load_config(create: bool = True) -> Dict[str, Any]:
         return config
     config = read_json(path)
     deepseek = (config.get("providers") or {}).get("deepseek") or {}
-    if (
+    pending_gateway = (
         deepseek.get("wire_api") == "responses"
-        and deepseek.get("base_url") in {
-            "https://api.deepseek.com",
-            "https://api.deepseek.com/",
-        }
-    ):
-        # Early v0.1.0 drafts incorrectly assumed that DeepSeek's official
-        # OpenAI-compatible API included /responses. Preserve the profile and
-        # Keychain reference, but require a real Responses gateway explicitly.
+        and deepseek.get("base_url") is None
+        and deepseek.get("setup_required") == "responses_gateway"
+    )
+    official_endpoint = deepseek.get("base_url") in {
+        "https://api.deepseek.com",
+        "https://api.deepseek.com/",
+    }
+    official_profile_stale = official_endpoint and any(
+        (
+            deepseek.get("display_name") != "DeepSeek Official",
+            deepseek.get("env_key") != "DEEPSEEK_API_KEY",
+            deepseek.get("model_catalog") != "deepseek-v4",
+            deepseek.get("minimum_codex_version") != "0.144.0",
+            "setup_required" in deepseek,
+        )
+    )
+    if pending_gateway or official_profile_stale:
+        # v0.2.x required a gateway because the official Responses endpoint was
+        # not yet documented. DeepSeek V4 now supports Codex directly. Only the
+        # built-in pending/official profile is migrated; custom gateways remain
+        # untouched.
         config = copy.deepcopy(config)
-        config["providers"]["deepseek"]["base_url"] = None
-        config["providers"]["deepseek"]["setup_required"] = "responses_gateway"
+        target = config["providers"]["deepseek"]
+        target["display_name"] = "DeepSeek Official"
+        target["base_url"] = "https://api.deepseek.com/"
+        target["env_key"] = "DEEPSEEK_API_KEY"
+        target["model_catalog"] = "deepseek-v4"
+        target["minimum_codex_version"] = "0.144.0"
+        target.pop("setup_required", None)
         save_config(config)
     config = validate_config(config)
     if path.stat().st_mode & 0o077:
@@ -189,6 +199,8 @@ def configure_provider(
     target["base_url"] = validate_base_url(base_url, allow_insecure_localhost)
     target["model"] = model or target["model"]
     target["env_key"] = env_key or target["env_key"]
+    target.pop("model_catalog", None)
+    target.pop("minimum_codex_version", None)
     target.pop("setup_required", None)
     save_config(updated)
     return updated

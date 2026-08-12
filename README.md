@@ -22,12 +22,12 @@ codex-model deepseek
 ```
 
 - `gpt` uses existing Codex official authentication without reading or copying `auth.json`.
-- The first `deepseek` run asks for a Responses-compatible HTTPS gateway and stores its key through a no-echo prompt in macOS Keychain.
+- The first `deepseek` run stores the DeepSeek API key through a no-echo prompt in macOS Keychain; the official V4 Responses endpoint is built in.
 - Select a project with `codex-model gpt /path/to/project`.
 - Forward Codex arguments with `codex-model deepseek -- --sandbox read-only`.
 - Inspect readiness with `codex-model status`; advanced controls remain under `codex-relay`.
 
-“Switching” selects a Provider for that launch; it does not persistently rewrite `~/.codex/config.toml`. DeepSeek's public API currently documents Chat Completions and Anthropic formats rather than the Responses endpoint Codex requires, so a self-hosted or organizational `/responses` gateway remains necessary.
+“Switching” selects a Provider for that launch; it does not persistently rewrite `~/.codex/config.toml`. DeepSeek now natively supports the Responses API required by Codex. Relay uses `deepseek-v4-flash` at `https://api.deepseek.com/` and requires Codex CLI 0.144.0 or newer for the official model catalog.
 
 [中文说明](README.zh-CN.md) · [Security model](docs/security-model.md) · [Operations](docs/operations.md) · [Roadmap](docs/roadmap.md)
 
@@ -36,7 +36,7 @@ codex-model deepseek
 | Goal | Shortest path | Changes history? |
 | --- | --- | --- |
 | Start Codex with OpenAI | `codex-model gpt` | No |
-| Route DeepSeek through a Responses gateway | `codex-model deepseek` (guided first run) | No |
+| Start Codex with DeepSeek V4 Flash | `codex-model deepseek` (Key setup on first run) | No |
 | Handoff the latest task | `prepare --last`, review, `show`, `send` | Creates a new task |
 | Repair provider-split sidebar history | `audit`, `plan-normalize`, `apply-normalize` | Yes, with backup and rollback |
 
@@ -53,13 +53,13 @@ codex-relay --version
 codex-relay doctor
 ```
 
-`doctor` reports Passed, Setup needed, or Error. A missing DeepSeek Responses gateway or key is only a setup item and does not block OpenAI. Use `codex-relay doctor --json` for machine-readable output.
+`doctor` reports Passed, Setup needed, or Error. A missing DeepSeek key is only a setup item and does not block OpenAI. Use `codex-relay doctor --json` for machine-readable output.
 
 If installation succeeds but `codex-relay` is not found, run `python3 -m site --user-base` and add its `bin` directory to `PATH`. You can also build and use the standalone ZipApp:
 
 ```bash
 python3 scripts/build.py
-python3 dist/codex-relay-0.2.1.pyz doctor
+python3 dist/codex-relay-0.3.0.pyz doctor
 (cd dist && shasum -a 256 -c SHA256SUMS)
 ```
 
@@ -71,17 +71,15 @@ OpenAI uses existing Codex official authentication; Relay neither reads nor copi
 codex-relay run openai -- -C "$PWD"
 ```
 
-Current Codex builds accept the Responses wire API, while DeepSeek's public official API exposes Chat Completions. Do not configure `https://api.deepseek.com` directly. Supply a self-hosted or organizational gateway that explicitly implements `/responses` and routes to DeepSeek:
+The built-in profile uses DeepSeek's official Responses endpoint and its V4 Flash model catalog:
 
 ```bash
-codex-relay provider configure deepseek \
-  --base-url https://YOUR_RESPONSES_GATEWAY/v1
 codex-relay key set deepseek
 codex-relay key status deepseek
 codex-relay run deepseek -- -C "$PWD"
 ```
 
-Relay does not provide or operate that gateway. The key is not written to configuration, argv, logs, handoff packages, or Git files. External usage is billed by the configured gateway/provider account. To inspect the non-secret launch command first, add `--dry-run`.
+The key is not written to configuration, argv, logs, handoff packages, or Git files. It is injected only into the child process environment. DeepSeek usage is billed independently by the DeepSeek account. To inspect the non-secret launch command first, add `--dry-run`. Advanced users may still override the built-in profile with `provider configure` for another Responses-compatible gateway.
 
 ## Handoff to another model
 
@@ -115,8 +113,8 @@ Relay changes only `session_meta.payload.model_provider` and the matching SQLite
 
 ## Common issues
 
-- Missing DeepSeek endpoint: ignore it when using only OpenAI, or configure a genuine Responses-compatible gateway; the official Chat Completions URL is rejected.
-- Missing external key: follow the gateway's credential requirements and run `key set`.
+- Unsupported Codex version: upgrade to Codex CLI 0.144.0 or newer before using the built-in DeepSeek V4 profile.
+- Missing external key: create a DeepSeek API key and run `key set`; Relay never prints its value.
 - Missing official authentication: run `codex login` or sign in through Codex Desktop.
 - No task found: run a Codex task first; make sure `--project` matches its working directory.
 - Digest mismatch: re-run `handoff show` or regenerate the migration plan; never bypass the check.
