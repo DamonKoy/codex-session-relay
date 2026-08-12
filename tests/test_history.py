@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,6 +9,7 @@ from unittest import mock
 
 from codex_session_relay import history
 from codex_session_relay.errors import RelayError
+from codex_session_relay.util import sqlite_connection
 from tests.support import create_session, create_state_db, make_fake_codex
 
 
@@ -65,13 +65,13 @@ class HistoryTests(unittest.TestCase):
         migrated = self.session.read_bytes()
         self.assertIn(b'"model_provider": "custom"', migrated.partition(b"\n")[0])
         self.assertEqual(migrated.partition(b"\n")[2], original_tail)
-        with sqlite3.connect(str(self.codex_home / "state_5.sqlite")) as connection:
+        with sqlite_connection(self.codex_home / "state_5.sqlite") as connection:
             self.assertEqual(connection.execute("SELECT model_provider FROM threads").fetchone()[0], "custom")
         backup = Path(result["backup"])
         manifest = json.loads((backup / "manifest.json").read_text(encoding="utf-8"))
         history.rollback(backup, manifest["confirmation_sha256"])
         self.assertEqual(self.session.read_bytes(), self.original)
-        with sqlite3.connect(str(self.codex_home / "state_5.sqlite")) as connection:
+        with sqlite_connection(self.codex_home / "state_5.sqlite") as connection:
             self.assertEqual(connection.execute("SELECT model_provider FROM threads").fetchone()[0], "deepseek")
 
     def test_changed_session_rejects_and_restores(self):
@@ -119,7 +119,7 @@ class HistoryTests(unittest.TestCase):
                 history.apply_normalize(plan_path, plan["confirmation_sha256"])
 
     def test_unknown_schema_is_rejected(self):
-        with sqlite3.connect(str(self.codex_home / "state_5.sqlite")) as connection:
+        with sqlite_connection(self.codex_home / "state_5.sqlite") as connection:
             connection.execute("ALTER TABLE threads RENAME TO old_threads")
             connection.execute("CREATE TABLE threads (id TEXT PRIMARY KEY)")
         with self.assertRaises(RelayError):

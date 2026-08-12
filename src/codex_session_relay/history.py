@@ -19,6 +19,7 @@ from .util import (
     read_json,
     sha256_bytes,
     sha256_file,
+    sqlite_connection,
     timestamp,
     utc_now,
     write_json,
@@ -69,7 +70,7 @@ def _read_session(path: Path) -> Dict[str, Any]:
 
 def _thread_rows() -> Dict[str, Dict[str, Any]]:
     codex.thread_schema()
-    with sqlite3.connect(str(state_db_path())) as connection:
+    with sqlite_connection(state_db_path()) as connection:
         connection.row_factory = sqlite3.Row
         rows = connection.execute(
             "SELECT id, model_provider, model, title, rollout_path FROM threads"
@@ -183,7 +184,7 @@ class HistoryLock:
 
 def _sqlite_backup(source: Path, target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(str(source)) as source_db, sqlite3.connect(str(target)) as target_db:
+    with sqlite_connection(source) as source_db, sqlite_connection(target) as target_db:
         source_db.backup(target_db)
 
 
@@ -285,7 +286,7 @@ def apply_normalize(plan_path: Path, confirm: str) -> Dict[str, Any]:
         try:
             for item in plan["items"]:
                 _replace_first_provider(item, plan["target_provider"])
-            with sqlite3.connect(str(state_db_path())) as connection:
+            with sqlite_connection(state_db_path()) as connection:
                 connection.execute("BEGIN IMMEDIATE")
                 for item in plan["items"]:
                     cursor = connection.execute(
@@ -371,7 +372,7 @@ def apply_tag_plan(plan_path: Path, confirm: str) -> Dict[str, Any]:
         _sqlite_backup(state_db_path(), backup / "state_5.sqlite")
         write_json(backup / "tag-plan.json", plan)
         try:
-            with sqlite3.connect(str(state_db_path())) as connection:
+            with sqlite_connection(state_db_path()) as connection:
                 connection.execute("BEGIN IMMEDIATE")
                 for item in plan["items"]:
                     cursor = connection.execute(

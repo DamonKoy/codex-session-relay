@@ -4,9 +4,21 @@ import datetime as dt
 import hashlib
 import json
 import os
+import sqlite3
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Iterator
+
+
+@contextmanager
+def sqlite_connection(path: Path) -> Iterator[sqlite3.Connection]:
+    connection = sqlite3.connect(str(path))
+    try:
+        with connection:
+            yield connection
+    finally:
+        connection.close()
 
 
 def canonical_json(value: Any) -> bytes:
@@ -73,4 +85,3 @@ def write_json(path: Path, value: Dict[str, Any], mode: int = 0o600) -> None:
     atomic_write_text(
         path, json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n", mode
     )
-

@@ -12,7 +12,7 @@ from . import codex
 from .config import get_provider
 from .errors import RelayError
 from .paths import relay_home, state_db_path
-from .util import sha256_bytes, timestamp, utc_now, write_json, read_json
+from .util import read_json, sha256_bytes, sqlite_connection, timestamp, utc_now, write_json
 
 
 SECRET_PATTERNS: List[Tuple[str, re.Pattern]] = [
@@ -134,7 +134,7 @@ def scan_injection(text: str) -> List[Dict[str, Any]]:
 
 def _thread(session_id: str) -> Dict[str, Any]:
     codex.thread_schema()
-    with sqlite3.connect(str(state_db_path())) as connection:
+    with sqlite_connection(state_db_path()) as connection:
         connection.row_factory = sqlite3.Row
         row = connection.execute(
             "SELECT id, rollout_path, cwd, title, model, model_provider, git_branch, git_sha "
@@ -250,7 +250,7 @@ def show(package: Path) -> Dict[str, Any]:
 
 
 def _thread_ids() -> Set[str]:
-    with sqlite3.connect(str(state_db_path())) as connection:
+    with sqlite_connection(state_db_path()) as connection:
         return {row[0] for row in connection.execute("SELECT id FROM threads")}
 
 

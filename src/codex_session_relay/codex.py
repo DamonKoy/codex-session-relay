@@ -13,7 +13,7 @@ from . import keychain
 from .config import get_provider
 from .errors import RelayError
 from .paths import codex_home, state_db_path
-from .util import sha256_bytes
+from .util import sha256_bytes, sqlite_connection
 
 
 REQUIRED_THREAD_COLUMNS = {
@@ -54,7 +54,7 @@ def thread_schema() -> List[Dict[str, Any]]:
     path = state_db_path()
     if not path.exists():
         raise RelayError("找不到 Codex 任务索引: %s" % path)
-    with sqlite3.connect(str(path)) as connection:
+    with sqlite_connection(path) as connection:
         rows = connection.execute("PRAGMA table_info(threads)").fetchall()
     if not rows:
         raise RelayError("Codex 任务索引缺少 threads 表")
@@ -104,7 +104,7 @@ def list_sessions(project: Optional[Path] = None, limit: int = 20) -> List[Dict[
         where = "WHERE cwd IN (%s)" % ", ".join("?" for _ in candidates)
         parameters.extend(candidates)
     parameters.append(limit)
-    with sqlite3.connect(str(state_db_path())) as connection:
+    with sqlite_connection(state_db_path()) as connection:
         connection.row_factory = sqlite3.Row
         rows = connection.execute(
             "SELECT id, title, model, model_provider, cwd, updated_at_ms "
@@ -116,7 +116,7 @@ def list_sessions(project: Optional[Path] = None, limit: int = 20) -> List[Dict[
 
 def get_session(session_id: str) -> Dict[str, Any]:
     thread_schema()
-    with sqlite3.connect(str(state_db_path())) as connection:
+    with sqlite_connection(state_db_path()) as connection:
         connection.row_factory = sqlite3.Row
         row = connection.execute(
             "SELECT id, title, model, model_provider, cwd, rollout_path, updated_at_ms "

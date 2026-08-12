@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import os
-import sqlite3
 from pathlib import Path
+
+from codex_session_relay.util import sqlite_connection
 
 
 def make_fake_codex(root: Path, version: str = "0.147.0-test") -> Path:
@@ -21,7 +22,7 @@ def make_fake_codex(root: Path, version: str = "0.147.0-test") -> Path:
 
 def create_state_db(path: Path, row: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(str(path)) as connection:
+    with sqlite_connection(path) as connection:
         connection.execute(
             """
             CREATE TABLE threads (
