@@ -1,6 +1,10 @@
 # X/Twitter launch copy
 
-> Draft only. Do not post until the repository is public and the URL resolves. Character counts below include the intended repository URL and use Unicode code-point counts; X may calculate weighted length differently, so verify in the composer before posting.
+> The repository and v0.1.0 Alpha release are public. The v0.2.0 one-click-install copy below is a release candidate and must not be posted until its public Release resolves. Character counts use Unicode code points; verify X's weighted length manually. Do not automate publication.
+
+## Recommended v0.2.0 post — publish only after release verification
+
+Codex Session Relay v0.2.0：一条命令安装，`codex-model gpt` / `codex-model deepseek` 即可按次启动不同 Provider。官方登录与外部 Key/计费保持独立；DeepSeek 首次配置网关，密钥进 Keychain。Unofficial. https://github.com/DamonKoy/codex-session-relay
 
 ## Recommended bilingual post — 180 characters
 
@@ -22,4 +26,4 @@ Codex Session Relay safely uses Codex official auth alongside separately billed 
 
 2. Cross-provider continuation creates a new task. It extracts only readable user/assistant text, excludes reasoning/tools/system instructions, redacts likely secrets, flags prompt injection, requires SHA-256 confirmation, and defaults to read-only.
 
-3. It does not transfer subscription quota, decrypt reasoning, or merge billing/authentication. v0.1.0 is macOS-first, Apache-2.0, standard-library Python, with reversible migration and deterministic builds. https://github.com/DamonKoy/codex-session-relay
+3. It does not transfer subscription quota, decrypt reasoning, or merge billing/authentication. v0.2.0 is macOS-first, Apache-2.0, standard-library Python, with reversible migration and deterministic builds. https://github.com/DamonKoy/codex-session-relay

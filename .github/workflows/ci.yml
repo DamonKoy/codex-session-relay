@@ -44,5 +44,7 @@ jobs:
           (cd dist && shasum -a 256 -c SHA256SUMS)
       - name: Smoke-test ZipApp
         run: |
-          python dist/codex-relay-0.1.0.pyz --version
-          python dist/codex-relay-0.1.0.pyz --help
+          python dist/codex-relay-0.2.0.pyz --version
+          python dist/codex-relay-0.2.0.pyz --help
+          ln -s codex-relay-0.2.0.pyz dist/codex-model
+          dist/codex-model --version

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codex-session-relay"
-version = "0.1.0"
+version = "0.2.0"
 description = "Safe provider switching and reviewed cross-model handoffs for Codex"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -24,6 +24,7 @@ dependencies = []
 
 [project.scripts]
 codex-relay = "codex_session_relay.cli:main"
+codex-model = "codex_session_relay.model_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/DamonKoy/codex-session-relay"
@@ -34,4 +35,3 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-

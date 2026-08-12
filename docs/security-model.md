@@ -26,6 +26,7 @@
 - Historical content is wrapped as untrusted data, and the target defaults to `read-only`.
 - Migration uses schema/version binding, content hashes, conditional SQL, an exclusive lock, client-process checks, backups, verification, and automatic recovery.
 - Builds use no runtime dependency and deterministic archives with checksums.
+- The convenience installer requires HTTPS, verifies the versioned ZipApp checksum before replacement, and preserves a conflicting regular target instead of deleting it.
 
 ## Explicit non-goals
 
@@ -34,5 +35,6 @@
 - Automatically trusting, sending, executing, merging, or publishing model/contributor output.
 - Supporting remote HTTP Provider endpoints.
 - Claiming protection against every secret format or prompt-injection technique.
+- Treating a checksum hosted beside a release asset as a substitute for signed releases or independent provenance.
 
 Secret scanning is defense in depth, not a guarantee. Users must review every handoff package before supplying its current digest.

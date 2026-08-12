@@ -65,7 +65,7 @@ def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
     if config.get("schema_version") != SCHEMA_VERSION:
         raise RelayError("不支持的配置 schema_version")
     if config.get("history_provider") != "custom":
-        raise RelayError("v0.1.0 只支持统一历史桶 custom")
+        raise RelayError("当前版本只支持统一历史桶 custom")
     providers = config.get("providers")
     if not isinstance(providers, dict) or not providers:
         raise RelayError("配置中缺少 providers")
@@ -73,7 +73,7 @@ def validate_config(config: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(name, str) or not name or not isinstance(provider, dict):
             raise RelayError("Provider 配置格式无效")
         if provider.get("wire_api") != "responses":
-            raise RelayError("v0.1.0 只支持 Responses-compatible Provider")
+            raise RelayError("当前版本只支持 Responses-compatible Provider")
         if provider.get("auth_mode") not in {"codex_official", "api_key"}:
             raise RelayError("Provider auth_mode 无效: %s" % name)
         if provider.get("auth_mode") == "api_key":

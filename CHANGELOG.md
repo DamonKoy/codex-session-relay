@@ -4,6 +4,15 @@ All notable changes follow Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-12
+
+### Added
+
+- Added the `codex-model gpt|deepseek [project]` launch wrapper with Codex argument passthrough.
+- Added guided first-run DeepSeek gateway and Keychain setup plus a non-secret status command.
+- Added a checksum-verified macOS one-line installer that installs both public commands under `~/.local/bin`.
+- Added isolated tests for shortcut routing, first-run failures, project fallback, offline installation, and insecure source rejection.
+
 ### Changed
 
 - Added human-readable `doctor` output with `--json` for automation.
@@ -12,6 +21,7 @@ All notable changes follow Keep a Changelog and Semantic Versioning.
 - Reworked the bilingual quick start around common user goals, PATH setup, troubleshooting, upgrade, and uninstall.
 - Require an explicit Responses-compatible gateway for the DeepSeek profile; the official Chat Completions endpoint is no longer treated as a Responses endpoint.
 - Exclude local caches, virtual environments, and package metadata from source archives.
+- Versioned deterministic artifacts and documentation for the v0.2.0 installation experience.
 
 ### Fixed
 

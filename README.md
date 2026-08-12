@@ -6,20 +6,43 @@ Codex Session Relay is a local-first macOS CLI for using Codex official authenti
 
 > **Unofficial project. Not affiliated with OpenAI or DeepSeek.** OpenAI mode uses the existing Codex subscription login. External providers use their own API keys, quotas, and billing. Relay does not transfer subscription quota, read `auth.json` contents, decrypt reasoning, or promise same-thread continuation across providers.
 
+## One-minute start
+
+Requirements: macOS, Python 3.9+, and a previously installed or used Codex CLI/Desktop.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DamonKoy/codex-session-relay/main/install.sh | sh
+```
+
+Open a new terminal, enter a project directory, and run:
+
+```bash
+codex-model gpt
+codex-model deepseek
+```
+
+- `gpt` uses existing Codex official authentication without reading or copying `auth.json`.
+- The first `deepseek` run asks for a Responses-compatible HTTPS gateway and stores its key through a no-echo prompt in macOS Keychain.
+- Select a project with `codex-model gpt /path/to/project`.
+- Forward Codex arguments with `codex-model deepseek -- --sandbox read-only`.
+- Inspect readiness with `codex-model status`; advanced controls remain under `codex-relay`.
+
+“Switching” selects a Provider for that launch; it does not persistently rewrite `~/.codex/config.toml`. DeepSeek's public API currently documents Chat Completions and Anthropic formats rather than the Responses endpoint Codex requires, so a self-hosted or organizational `/responses` gateway remains necessary.
+
 [中文说明](README.zh-CN.md) · [Security model](docs/security-model.md) · [Operations](docs/operations.md) · [Roadmap](docs/roadmap.md)
 
 ## Choose your goal
 
 | Goal | Shortest path | Changes history? |
 | --- | --- | --- |
-| Start Codex with OpenAI | `codex-relay run openai -- -C "$PWD"` | No |
-| Route DeepSeek through a Responses gateway | Configure gateway and key, then `run deepseek` | No |
+| Start Codex with OpenAI | `codex-model gpt` | No |
+| Route DeepSeek through a Responses gateway | `codex-model deepseek` (guided first run) | No |
 | Handoff the latest task | `prepare --last`, review, `show`, `send` | Creates a new task |
 | Repair provider-split sidebar history | `audit`, `plan-normalize`, `apply-normalize` | Yes, with backup and rollback |
 
 You do not need history migration to switch providers or hand off a task.
 
-## Install and check
+## Manual install and check
 
 Requirements: macOS, Python 3.9+, and a previously used Codex CLI/Desktop installation. There are no third-party runtime dependencies.
 
@@ -36,11 +59,11 @@ If installation succeeds but `codex-relay` is not found, run `python3 -m site --
 
 ```bash
 python3 scripts/build.py
-python3 dist/codex-relay-0.1.0.pyz doctor
+python3 dist/codex-relay-0.2.0.pyz doctor
 (cd dist && shasum -a 256 -c SHA256SUMS)
 ```
 
-## Run a provider
+## Use the low-level provider command
 
 OpenAI uses existing Codex official authentication; Relay neither reads nor copies its contents:
 
@@ -100,6 +123,6 @@ Relay changes only `session_meta.payload.model_provider` and the matching SQLite
 - Active client: quit Codex and ChatGPT before migration or rollback.
 - Unknown schema: stop and upgrade Relay or report a compatibility issue.
 
-Upgrade with `python3 -m pip install --user --upgrade .` and uninstall with `python3 -m pip uninstall codex-session-relay`. Uninstall intentionally preserves `~/.codex-session-relay` and Keychain items to avoid deleting user data.
+Re-run the one-line installer to upgrade to the version declared by the installer. It accepts only HTTPS releases, verifies SHA-256 before replacement, installs to `~/.local/bin`, and updates `~/.zshrc` idempotently. An existing regular file is retained as `.previous`. Source installs can be upgraded with `python3 -m pip install --user --upgrade .` and removed with `python3 -m pip uninstall codex-session-relay`. Uninstall intentionally preserves Relay configuration and Keychain items.
 
 See [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md), the [architecture](docs/architecture.md), [validation status](docs/validation.md), [operations guide](docs/operations.md), and [Git/release process](docs/git-release.md). Apache-2.0; see [LICENSE](LICENSE).

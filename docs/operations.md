@@ -15,10 +15,20 @@ Provider compatibility is a separate boundary from macOS compatibility. Current 
 
 ## Before first use
 
-1. Run `codex-relay doctor`; use `doctor --json` only for automation.
-2. Confirm the reported Codex version and `threads` schema fingerprint.
-3. Set each external Provider key through `codex-relay key set`.
-4. Use `run ... --dry-run` to review non-secret command construction.
+1. Run `codex-model gpt` for the official-auth path.
+2. Run `codex-model deepseek`; the first invocation guides endpoint and Keychain setup.
+3. Run `codex-model status`, then `codex-relay doctor`; use `doctor --json` only for automation.
+4. Use `codex-model <mode> --dry-run` to review non-secret command construction.
+
+`codex-model` is a launch wrapper, not a global config editor. It prepends `-C <project>` and passes arguments after `--` to the selected Codex child process. Simultaneous shells can therefore select different Providers without taking turns overwriting a shared `config.toml`.
+
+## Installer runbook
+
+- The one-line installer downloads a versioned ZipApp and `SHA256SUMS` from the matching GitHub Release.
+- It refuses non-HTTPS network sources and verifies the asset before touching the install target.
+- It installs `codex-relay` and the `codex-model` symlink under `~/.local/bin`, then adds that directory to zsh PATH once.
+- Existing regular files in that target are moved to `.previous`; installation does not modify Keychain items, Relay configuration, Codex authentication, or task data.
+- For managed environments, download and inspect `install.sh`, set `CODEX_RELAY_INSTALL_DIR`, or use the source/ZipApp workflow instead of piping directly to `sh`.
 
 To locate a source task without opening SQLite manually:
 
