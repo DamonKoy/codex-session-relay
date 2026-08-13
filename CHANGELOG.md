@@ -4,6 +4,10 @@ All notable changes follow Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Rendered `docs/open-source-application.md` from live GitHub API metrics and switched the copy-paste submission version to descriptive field headings.
+
 ## [0.3.0] - 2026-08-13
 
 ### Added
