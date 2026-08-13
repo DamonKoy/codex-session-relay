@@ -43,6 +43,9 @@ class ApplicationBuildTests(unittest.TestCase):
             self.assertIn("**Role**: Primary maintainer", text)
             self.assertIn("Codex Security; API credits for my project", text)
             self.assertIn("Fill manually", text)
+            self.assertIn("### Why the repository qualifies", text)
+            self.assertIn("### How API credits will be used", text)
+            self.assertIn("### Additional information", text)
             self.assertNotIn("[填写", text)
 
     def test_metric_copy_uses_singular_and_plural_labels(self):

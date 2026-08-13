@@ -151,7 +151,8 @@ def render(repo: str, role: str, output: Path) -> Dict[str, Any]:
         sections.append(_field(*answer))
     sections.extend(["## Most recommended submission version", ""])
     for index, (_, english, _, _) in enumerate(answers, 1):
-        sections.extend(["### %s" % index, "", english, ""])
+        heading = answers[index - 1][0].split(". ", 1)[1]
+        sections.extend(["### %s" % heading, "", english, ""])
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text("\n".join(sections).rstrip() + "\n", encoding="utf-8")
     return {"output": str(output.resolve()), "metrics": metrics, "fields": 3}
